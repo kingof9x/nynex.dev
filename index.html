@@ -1,0 +1,674 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>NYNEX // nynex.dev</title>
+<meta name="description" content="nynex.dev — technologist. IT consulting, event production technology, side projects and resume.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Audiowide&family=VT323&family=IBM+Plex+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#070302; --panel:rgba(14,7,2,.88); --panel2:#160a02;
+  --orange:#ff7a00; --amber:#ffb000; --yellow:#ffe14a; --red:#ff3b1f; --acid:#c6ff00;
+  --text:#ffe9cf; --dim:#a07a55; --line:rgba(255,122,0,.45);
+  --disp:"Audiowide",sans-serif; --crt:"VT323",monospace; --mono:"IBM Plex Mono",ui-monospace,monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font-family:var(--mono);font-size:15px;line-height:1.6;overflow-x:hidden;min-height:100vh}
+a{color:var(--amber);text-decoration:none}
+a:hover{color:var(--yellow);text-shadow:0 0 10px var(--orange)}
+::selection{background:var(--orange);color:#000}
+
+/* ---------- CRT overlay ---------- */
+body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:50;
+  background:repeating-linear-gradient(to bottom,rgba(255,170,60,.04) 0 1px,transparent 1px 3px)}
+body::after{content:"";position:fixed;inset:0;pointer-events:none;z-index:51;
+  background:radial-gradient(ellipse at center,transparent 55%,rgba(0,0,0,.8) 100%)}
+
+/* ---------- Data city backdrop ---------- */
+#city{position:fixed;inset:0;width:100%;height:100%;z-index:-1}
+
+/* ---------- Boot ---------- */
+#boot{position:fixed;inset:0;background:#000;z-index:100;padding:24px;font-family:var(--crt);font-size:23px;color:var(--amber);
+  text-shadow:0 0 8px var(--orange);cursor:pointer;transition:opacity .6s}
+#boot.done{opacity:0;pointer-events:none}
+#boot .skip{position:absolute;bottom:16px;right:20px;color:var(--dim);font-size:18px;text-shadow:none}
+
+/* ---------- Nav + ticker ---------- */
+header{position:sticky;top:0;z-index:20}
+nav{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;padding:10px 20px;
+  background:rgba(7,3,2,.9);backdrop-filter:blur(6px);border-bottom:2px solid var(--orange)}
+nav .logo{font-family:var(--disp);font-size:22px;letter-spacing:.18em;color:var(--orange);text-shadow:0 0 12px var(--orange)}
+nav .logo small{font-family:var(--crt);font-size:17px;color:var(--dim);letter-spacing:.1em;margin-left:8px}
+nav ul{display:flex;gap:18px;list-style:none;flex-wrap:wrap}
+nav a{font-family:var(--crt);font-size:21px;color:var(--text);text-transform:uppercase;letter-spacing:.06em}
+nav a:hover{color:var(--orange)}
+.ticker{overflow:hidden;white-space:nowrap;background:var(--orange);color:#000;font-family:var(--crt);font-size:19px;letter-spacing:.08em}
+.ticker div{display:inline-block;padding:2px 0;animation:tick 40s linear infinite}
+@keyframes tick{to{transform:translateX(-50%)}}
+
+main{max-width:1100px;margin:0 auto;padding:0 16px 100px}
+section{padding:80px 0 0;scroll-margin-top:70px}
+
+/* ---------- Section headings ---------- */
+.sh{display:flex;align-items:baseline;gap:14px;margin-bottom:26px;flex-wrap:wrap}
+.sh .num{font-family:var(--crt);font-size:22px;color:#000;background:var(--amber);padding:0 8px}
+.sh h2{font-family:var(--disp);font-weight:400;font-size:clamp(28px,5vw,44px);color:var(--orange);letter-spacing:.06em;
+  text-shadow:2px 2px 0 var(--red),0 0 18px rgba(255,122,0,.6);text-transform:uppercase}
+.sh .cmd{font-family:var(--crt);font-size:20px;color:var(--dim)}
+
+/* ---------- 90s OS window panel ---------- */
+.win{background:var(--panel);border:2px solid var(--orange);box-shadow:6px 6px 0 rgba(255,59,31,.55),0 0 30px rgba(255,122,0,.12)}
+.win .bar{display:flex;justify-content:space-between;align-items:center;background:linear-gradient(90deg,var(--orange),var(--amber));
+  color:#000;font-family:var(--crt);font-size:19px;padding:1px 8px;letter-spacing:.08em}
+.win .bar i{display:inline-block;width:11px;height:11px;border:2px solid #000;margin-left:5px}
+.win .body{padding:20px}
+
+/* ---------- Hero ---------- */
+.hero{min-height:86vh;display:flex;flex-direction:column;justify-content:center;padding-top:30px}
+.hero .kicker{font-family:var(--crt);font-size:22px;color:var(--amber);letter-spacing:.3em}
+.hero h1{font-family:var(--disp);font-weight:400;font-size:clamp(64px,17vw,180px);line-height:.95;letter-spacing:.04em;
+  color:var(--yellow);text-shadow:4px 4px 0 var(--red),8px 8px 0 rgba(255,122,0,.5),0 0 40px rgba(255,140,0,.6);
+  transform:skewX(-8deg);transform-origin:left;margin:6px 0 10px}
+.hero .roles{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0 16px}
+.hero .roles span{font-family:var(--crt);font-size:22px;border:1px solid var(--orange);padding:0 10px;color:var(--orange);background:rgba(0,0,0,.6)}
+.hero .sub{font-family:var(--crt);font-size:clamp(22px,4vw,30px);min-height:1.4em}
+.cursor{display:inline-block;width:.55em;height:1em;background:var(--orange);vertical-align:-.12em;margin-left:3px;animation:blink 1s steps(1) infinite;box-shadow:0 0 10px var(--orange)}
+@keyframes blink{50%{opacity:0}}
+.cta{display:flex;gap:14px;flex-wrap:wrap;margin-top:30px}
+.btn{font-family:var(--crt);font-size:22px;padding:6px 20px;border:2px solid var(--orange);color:#000;background:var(--orange);
+  text-transform:uppercase;letter-spacing:.1em;box-shadow:4px 4px 0 var(--red);transition:.12s}
+.btn:hover{color:#000;transform:translate(-2px,-2px);box-shadow:6px 6px 0 var(--red),0 0 24px var(--orange);text-shadow:none}
+.btn.ghost{background:rgba(0,0,0,.65);color:var(--orange)}
+.btn.ghost:hover{color:var(--yellow)}
+
+/* ---------- Services ---------- */
+.svc{display:grid;grid-template-columns:1fr 1fr;gap:26px}
+.svc h3{font-family:var(--disp);font-weight:400;font-size:24px;color:var(--yellow);margin-bottom:8px}
+.svc p{color:#e8cfb0;font-size:14px;margin-bottom:12px}
+.svc ul{list-style:none;columns:2;column-gap:16px;font-size:14px}
+.svc li{break-inside:avoid;padding:2px 0}
+.svc li::before{content:"▸ ";color:var(--orange)}
+
+/* ---------- Events ---------- */
+.events{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:26px}
+.ev .shot{aspect-ratio:16/9;border-bottom:2px solid var(--orange);background:
+  repeating-linear-gradient(135deg,rgba(255,122,0,.12) 0 10px,transparent 10px 20px),#0c0602;
+  display:flex;align-items:center;justify-content:center;font-family:var(--crt);font-size:20px;color:var(--dim);overflow:hidden}
+.ev .shot img{width:100%;height:100%;object-fit:cover;filter:sepia(.35) saturate(1.3) contrast(1.05)}
+.ev .body{padding:16px 18px}
+.ev .meta{font-family:var(--crt);font-size:18px;color:var(--amber);letter-spacing:.05em}
+.ev h3{font-family:var(--disp);font-weight:400;font-size:21px;color:var(--text);line-height:1.25;margin:4px 0 8px}
+.ev .role{display:inline-block;font-family:var(--crt);font-size:18px;color:#000;background:var(--yellow);padding:0 8px;margin-bottom:8px}
+.ev p{font-size:13.5px;color:#d9bf9f}
+.tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+.tags span{font-size:11.5px;color:var(--orange);border:1px solid rgba(255,122,0,.5);padding:0 6px}
+
+/* ---------- Projects ---------- */
+.projects{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:26px}
+.proj .body{display:flex;flex-direction:column;gap:8px;height:calc(100% - 26px)}
+.proj h3{font-family:var(--disp);font-weight:400;font-size:21px;color:var(--yellow)}
+.proj .status{font-family:var(--crt);font-size:18px}
+.proj .status b{font-weight:400;color:var(--acid)}
+.proj p{font-size:13.5px;color:#d9bf9f;flex:1}
+.proj .links{display:flex;gap:16px;font-family:var(--crt);font-size:19px;border-top:1px dashed var(--line);padding-top:8px}
+
+/* ---------- Resume ---------- */
+.resume{display:grid;grid-template-columns:1fr 320px;gap:26px;align-items:start}
+.timeline{list-style:none}
+.timeline > li{display:grid;grid-template-columns:120px 1fr;gap:16px;padding:14px 0;border-bottom:1px dashed var(--line)}
+.timeline > li:last-child{border-bottom:0}
+.timeline .when{font-family:var(--crt);font-size:20px;color:var(--amber);line-height:1.3}
+.timeline h3{font-family:var(--disp);font-weight:400;font-size:19px;color:var(--yellow);line-height:1.3}
+.timeline h3 small{display:block;font-family:var(--mono);font-size:13px;color:var(--dim)}
+.timeline ul{margin:6px 0 0 16px;font-size:13.5px;color:#e3c9a8}
+.timeline ul li::marker{content:"» ";color:var(--orange)}
+.contact{list-style:none;font-size:14px}
+.contact li{display:flex;justify-content:space-between;gap:10px;padding:7px 0;border-bottom:1px dashed var(--line)}
+.contact b{font-weight:400;color:var(--dim);font-family:var(--crt);font-size:19px;text-transform:uppercase}
+.contact span{text-align:right;word-break:break-all}
+.status-dot{color:var(--acid);text-shadow:0 0 8px var(--acid)}
+.skills{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+.skills span{font-size:12px;background:rgba(255,122,0,.12);border:1px solid rgba(255,122,0,.4);padding:1px 7px}
+.side h4{font-family:var(--crt);font-weight:400;font-size:21px;color:var(--orange);margin:16px 0 4px;letter-spacing:.08em}
+
+/* ---------- Desktop icons ---------- */
+.desk{display:flex;flex-wrap:wrap;gap:14px 20px;margin-top:34px}
+.icon{width:96px;display:flex;flex-direction:column;align-items:center;gap:6px;text-align:center;color:var(--text);
+  font-family:var(--crt);font-size:19px;line-height:1.1;padding:6px 2px}
+.icon svg{width:52px;height:52px;shape-rendering:crispEdges;filter:drop-shadow(0 0 6px rgba(255,122,0,.45))}
+.icon span{padding:0 4px;background:rgba(0,0,0,.65)}
+.icon:hover,.icon:focus-visible{color:#000;text-shadow:none;outline:none}
+.icon:hover span,.icon:focus-visible span{background:var(--orange)}
+.icon:hover svg,.icon:focus-visible svg{filter:drop-shadow(0 0 10px var(--orange)) brightness(1.25)}
+
+/* ---------- Retro windows ---------- */
+.os-win{position:fixed;z-index:30;display:flex;flex-direction:column;min-width:280px;padding:3px;
+  background:#0d0602;border:2px solid #000;
+  box-shadow:inset 2px 2px 0 var(--amber),inset -2px -2px 0 #6b2a00,0 0 0 1px var(--orange),8px 8px 0 rgba(0,0,0,.65),0 0 40px rgba(255,122,0,.18)}
+.os-win[hidden]{display:none}
+.os-win.opening{visibility:hidden}
+.os-title{flex:none;display:flex;align-items:center;gap:8px;height:24px;padding:0 6px;cursor:grab;user-select:none;touch-action:none;
+  background:repeating-linear-gradient(to bottom,var(--orange) 0 2px,#1a0a02 2px 4px);border-bottom:2px solid #000}
+.os-win.dragging .os-title{cursor:grabbing}
+.os-win:not(.active) .os-title{background:#2a1405}
+.os-name{margin:0 auto;background:#0d0602;padding:0 12px;font-family:var(--crt);font-size:20px;line-height:22px;color:var(--amber);letter-spacing:.1em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.os-win:not(.active) .os-name{color:var(--dim)}
+.os-btn{position:relative;flex:none;width:15px;height:15px;padding:0;background:#0d0602;border:2px solid var(--amber);box-shadow:inset 1px 1px 0 #6b2a00;cursor:pointer}
+.os-btn:hover{background:var(--orange)}
+.os-btn:active{background:var(--yellow)}
+.os-btn:focus-visible{outline:2px solid var(--yellow);outline-offset:1px}
+.os-zoom::after{content:"";position:absolute;left:1px;top:1px;width:5px;height:5px;border:1px solid var(--amber)}
+.os-win:not(.active) .os-btn{visibility:hidden}
+.os-body{flex:1;overflow:auto;padding:22px;background:var(--bg);scrollbar-color:var(--orange) #1a0a02}
+.os-body::-webkit-scrollbar{width:16px;height:16px}
+.os-body::-webkit-scrollbar-track{background:repeating-linear-gradient(45deg,#1a0a02 0 2px,#0d0602 2px 4px);border-left:2px solid #000}
+.os-body::-webkit-scrollbar-thumb{background:var(--orange);border:2px solid #000;box-shadow:inset 2px 2px 0 var(--yellow),inset -2px -2px 0 #6b2a00}
+.os-body .sh{display:none}
+.os-status{flex:none;display:flex;justify-content:space-between;gap:10px;padding:0 8px;font-family:var(--crt);font-size:16px;color:var(--dim);background:#120802;border-top:2px solid #000}
+.os-win.max{left:6px!important;top:6px!important;width:calc(100vw - 12px)!important;height:calc(100vh - 12px)!important}
+.os-win.shaded{height:auto!important;min-height:0}
+.os-win.shaded > :not(.os-title){display:none}
+.zrect{position:fixed;z-index:99;border:2px solid var(--yellow);pointer-events:none;opacity:0;box-shadow:0 0 10px var(--orange)}
+@media (max-width:760px){
+  .os-win,.os-win.max{left:6px!important;top:6px!important;width:calc(100vw - 12px)!important;height:calc(100dvh - 12px)!important}
+  .os-title{cursor:default}
+  .os-body{padding:14px}
+}
+
+footer{text-align:center;padding:60px 16px 40px;font-size:13px;color:var(--dim)}
+footer .big{font-family:var(--disp);font-size:clamp(18px,4vw,30px);color:var(--orange);text-shadow:3px 3px 0 var(--red);letter-spacing:.14em;margin-bottom:10px}
+
+.reveal{opacity:0;transform:translateY(24px);transition:opacity .7s,transform .7s}
+.reveal.in{opacity:1;transform:none}
+
+@media (max-width:820px){
+  .svc,.resume{grid-template-columns:1fr}
+  .svc ul{columns:1}
+  .timeline > li{grid-template-columns:1fr;gap:2px}
+  .events,.projects{grid-template-columns:1fr}
+  nav ul{gap:12px} nav a{font-size:18px}
+}
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation:none!important;transition:none!important}
+  .reveal{opacity:1;transform:none}
+}
+</style>
+</head>
+<body>
+
+<div id="boot" aria-hidden="true"><div id="bootText"></div><div class="skip">[ click or press any key ]</div></div>
+<canvas id="city" aria-hidden="true"></canvas>
+
+<header>
+  <nav>
+    <a class="logo" href="#top">NYNEX<small>// technologist</small></a>
+    <ul>
+      <li><a href="#services">Services</a></li>
+      <li><a href="#events">Events</a></li>
+      <li><a href="#projects">Projects</a></li>
+      <li><a href="#resume">Resume</a></li>
+    </ul>
+  </nav>
+  <div class="ticker"><div id="ticker"></div></div>
+</header>
+
+<main id="top">
+
+  <!-- ================= HERO ================= -->
+  <section class="hero">
+    <div class="kicker">&gt;&gt; CONNECTION ESTABLISHED</div>
+    <h1>NYNEX</h1>
+    <div class="roles"><span>LIVE VIDEO SYSTEMS</span><span>IT CONSULTING</span><span>SIDE PROJECTS</span></div>
+    <div class="sub"><span id="typed"></span><span class="cursor"></span></div>
+    <div class="desk" role="navigation" aria-label="Open a window">
+      <a class="icon" href="#services">
+        <svg viewBox="0 0 32 32" aria-hidden="true"><rect x="4" y="4" width="24" height="17" fill="#160a02" stroke="#ff7a00" stroke-width="2"/><rect x="8" y="8" width="16" height="9" fill="#ff7a00" opacity=".4"/><rect x="11" y="22" width="10" height="2" fill="#ff7a00"/><rect x="6" y="25" width="20" height="4" fill="#160a02" stroke="#ffb000" stroke-width="2"/></svg>
+        <span>Services</span></a>
+      <a class="icon" href="#events">
+        <svg viewBox="0 0 32 32" aria-hidden="true"><rect x="3" y="5" width="26" height="18" fill="#160a02" stroke="#ff7a00" stroke-width="2"/><g fill="#ffb000"><rect x="6" y="8" width="5" height="5"/><rect x="13" y="8" width="5" height="5" fill="#ff3b1f"/><rect x="20" y="8" width="5" height="5"/><rect x="6" y="15" width="5" height="5" fill="#ffe14a"/><rect x="13" y="15" width="5" height="5"/><rect x="20" y="15" width="5" height="5" fill="#ff7a00"/></g><rect x="14" y="23" width="4" height="4" fill="#ff7a00"/><rect x="9" y="27" width="14" height="2" fill="#ff7a00"/></svg>
+        <span>Events</span></a>
+      <a class="icon" href="#projects">
+        <svg viewBox="0 0 32 32" aria-hidden="true"><path d="M5 4h19l4 4v20H5z" fill="#160a02" stroke="#ff7a00" stroke-width="2"/><rect x="10" y="5" width="11" height="7" fill="#ffb000"/><rect x="17" y="6" width="3" height="5" fill="#160a02"/><rect x="9" y="17" width="15" height="9" fill="#ff7a00" fill-opacity=".35" stroke="#ff7a00" stroke-width="2"/></svg>
+        <span>Projects</span></a>
+      <a class="icon" href="#resume">
+        <svg viewBox="0 0 32 32" aria-hidden="true"><path d="M7 3h13l5 5v21H7z" fill="#160a02" stroke="#ff7a00" stroke-width="2"/><path d="M20 3v5h5" fill="none" stroke="#ff7a00" stroke-width="2"/><g fill="#ffb000"><rect x="10" y="12" width="12" height="2"/><rect x="10" y="16" width="12" height="2"/><rect x="10" y="20" width="9" height="2"/><rect x="10" y="24" width="11" height="2"/></g></svg>
+        <span>Resume</span></a>
+      <a class="icon" href="https://www.linkedin.com/in/callum-davenport-3a160013a/" target="_blank" rel="noopener">
+        <svg viewBox="0 0 32 32" aria-hidden="true"><rect x="3" y="7" width="26" height="18" fill="#160a02" stroke="#ff7a00" stroke-width="2"/><rect x="7" y="11" width="7" height="7" fill="#ffb000"/><rect x="6" y="19" width="9" height="3" fill="#ffb000"/><g fill="#ff7a00"><rect x="17" y="12" width="9" height="2"/><rect x="17" y="16" width="7" height="2"/><rect x="17" y="20" width="8" height="2"/></g></svg>
+        <span>LinkedIn ↗</span></a>
+      <a class="icon" href="https://ko-fi.com/kingof9x" target="_blank" rel="noopener">
+        <svg viewBox="0 0 32 32" aria-hidden="true"><path d="M6 11h17v11a5 5 0 0 1-5 5h-7a5 5 0 0 1-5-5z" fill="#160a02" stroke="#ff7a00" stroke-width="2"/><path d="M23 14h3a3 3 0 0 1 0 6h-3" fill="none" stroke="#ff7a00" stroke-width="2"/><rect x="9" y="14" width="11" height="3" fill="#ffb000"/><g fill="#ffe14a"><rect x="10" y="4" width="2" height="4"/><rect x="14" y="3" width="2" height="5"/><rect x="18" y="4" width="2" height="4"/></g></svg>
+        <span>Ko-fi ↗</span></a>
+    </div>
+  </section>
+
+  <!-- ================= SERVICES ================= -->
+  <section id="services" class="os-win" hidden data-title="SERVICES.EXE" data-w="860">
+    <div class="sh"><span class="num">01</span><h2>Services</h2><span class="cmd">// what I do</span></div>
+    <div class="svc">
+      <div class="win"><div class="bar">IT_CONSULTING.EXE <span><i></i><i></i></span></div><div class="body">
+        <h3>IT Consulting</h3>
+        <p>Local IT consulting in Marin County, backed by nearly two decades running IT for Bay Area publishers — from day-to-day support to strategy and leadership.</p>
+        <ul>
+          <li>IT strategy &amp; leadership</li>
+          <li>Server &amp; infrastructure admin</li>
+          <li>Cloud migration (AWS)</li>
+          <li>Backup &amp; disaster recovery</li>
+          <li>Windows / macOS / Linux</li>
+          <li>Email, VoIP &amp; e-commerce</li>
+        </ul>
+      </div></div>
+      <div class="win"><div class="bar">VIDEO_SYSTEMS.EXE <span><i></i><i></i></span></div><div class="body">
+        <h3>Live Video Systems</h3>
+        <p>I build and run video systems for live entertainment — concert tours, broadcast sports and live events.</p>
+        <ul>
+          <li>Video engineering</li>
+          <li>LED walls &amp; LED tech</li>
+          <li>Engineer in charge (EIC)</li>
+          <li>Tech management</li>
+          <li>TV broadcast support</li>
+          <li>Touring &amp; custom builds</li>
+        </ul>
+      </div></div>
+    </div>
+  </section>
+
+  <!-- ================= EVENTS ================= -->
+  <section id="events" class="os-win" hidden data-title="EVENTS" data-w="820">
+    <div class="sh"><span class="num">02</span><h2>Events</h2><span class="cmd">// shows I've teched</span></div>
+    <div class="events" id="eventList"></div>
+  </section>
+
+  <!-- ================= PROJECTS ================= -->
+  <section id="projects" class="os-win" hidden data-title="SIDE PROJECTS" data-w="760">
+    <div class="sh"><span class="num">03</span><h2>Side Projects</h2><span class="cmd">// things I build &amp; run</span></div>
+    <div class="projects" id="projList"></div>
+  </section>
+
+  <!-- ================= RESUME ================= -->
+  <section id="resume" class="os-win" hidden data-title="RESUME.DOC — CALLUM DAVENPORT" data-w="1000">
+    <div class="sh"><span class="num">04</span><h2>Resume</h2><span class="cmd">// cat career.log</span></div>
+    <div class="resume">
+      <div class="win"><div class="bar">EXPERIENCE.LOG <span><i></i><i></i></span></div><div class="body">
+        <ol class="timeline" id="jobList"></ol>
+      </div></div>
+      <div class="win side"><div class="bar">CONTACT.SYS <span><i></i><i></i></span></div><div class="body">
+        <!-- EDIT: contact details -->
+        <ul class="contact">
+          <li><b>Name</b><span>Callum Davenport</span></li>
+          <li><b>Title</b><span>Technologist</span></li>
+          <li><b>Based</b><span>SF Bay Area / Marin County</span></li>
+          <li><b>Status</b><span class="status-dot">● available</span></li>
+          <li><b>Email</b><span><a href="mailto:callumdvnprt@gmail.com">callumdvnprt@gmail.com</a></span></li>
+          <li><b>LinkedIn</b><span><a href="https://www.linkedin.com/in/callum-davenport-3a160013a/" target="_blank" rel="noopener">Callum Davenport</a></span></li>
+          <li><b>Ko-fi</b><span><a href="https://ko-fi.com/kingof9x" target="_blank" rel="noopener">ko-fi.com/kingof9x</a></span></li>
+          <li><b>GitHub</b><span><a href="https://github.com/kingof9x" target="_blank" rel="noopener">kingof9x</a></span></li>
+        </ul>
+        <h4>TOP SKILLS</h4>
+        <div class="skills"><span>IT Strategy</span><span>IT Leadership</span><span>E-commerce</span></div>
+        <h4>TOOLKIT</h4>
+        <div class="skills"><span>LED video walls</span><span>Video engineering</span><span>AWS</span><span>Linux</span><span>Asterisk VoIP</span><span>Windows</span><span>macOS</span><span>Disaster recovery</span><span>Help desk</span></div>
+        <div class="cta" style="margin-top:20px"><a class="btn" href="resume.pdf">Download PDF</a></div>
+      </div></div>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <div class="big">ALWAYS ON. NEVER OFFLINE.</div>
+  <div style="font-family:var(--crt);font-size:21px;margin-bottom:8px">
+    <a href="https://www.linkedin.com/in/callum-davenport-3a160013a/" target="_blank" rel="noopener">[ LINKEDIN ]</a> &nbsp;
+    <a href="https://ko-fi.com/kingof9x" target="_blank" rel="noopener">[ KO-FI ]</a> &nbsp;
+    <a href="https://github.com/kingof9x" target="_blank" rel="noopener">[ GITHUB ]</a>
+  </div>
+  <div>© <span id="yr"></span> Callum Davenport // nynex.dev</div>
+</footer>
+
+<script>
+/* =========================================================
+   EDIT YOUR CONTENT HERE
+   ========================================================= */
+const TAGLINES = [
+  "technologist.",
+  "video systems for live entertainment.",
+  "IT consulting in Marin County.",
+  "from the server room to the LED wall."
+];
+
+const TICKER = [
+  "VIDEO ENGINEER", "LED TECH / EIC", "IT CONSULTING — MARIN COUNTY", "LIVE ENTERTAINMENT",
+  "TV BROADCAST & LIVE EVENT", "IT STRATEGY & LEADERSHIP", "EMAIL: CALLUMDVNPRT@GMAIL.COM"
+];
+
+/* image: photo path or URL (blank = placeholder). link: optional video/photo link */
+const EVENTS = [
+  { name: "LIV Golf — 2023 Season", date: "2023", venue: "On tour",
+    role: "Tech Manager", image: "",
+    desc: "Tech manager for the live show supporting each tournament, across TV broadcast and live event.",
+    tags: ["TV Broadcast","Live Event","Touring"] },
+  { name: "Papa Roach — 2022 Spring Tour", date: "FEB–APR 2022", venue: "United States, Canada & Mexico",
+    role: "Video Engineer", image: "https://img.youtube.com/vi/RYHEwjgDvKA/hqdefault.jpg",
+    link: "https://youtu.be/RYHEwjgDvKA",
+    desc: "Video engineer for the spring tour, including a small custom LED wall I built for the band.",
+    tags: ["Concert Touring","LED Wall","Custom Build"] },
+];
+
+/* status: "live" | "building" | "archived" */
+const PROJECTS = [
+  { name: "TileSmith", status: "building",
+    desc: "[One-line description of TileSmith — what it does and who it's for.]",
+    tags: ["[Tech]","[Topic]"], repo: "https://github.com/kingof9x/TileSmith" },
+];
+
+const JOBS = [
+  { when: "MAY 2022 — NOW", title: "LED Technician / EIC", org: "Screenworks NEP · SF Bay Area", bullets: [] },
+  { when: "OCT 2021 — NOW", title: "Video Engineer", org: "4Wall Entertainment", bullets: [] },
+  { when: "OCT 2021 — NOW", title: "Information Technology Consultant", org: "Self-employed · Marin County", bullets: [] },
+  { when: "MAY 2009 — NOW", title: "IT Consultant", org: "ORO Editions · Novato, CA", bullets: [] },
+  { when: "2023", title: "Tech Manager (TV Broadcast & Live Event)", org: "LIV Golf · On tour",
+    bullets: ["Tech manager for the live show that supports the tournament."] },
+  { when: "MAY — JUN 2022", title: "Video Engineer", org: "William Signal · SF Bay Area", bullets: [] },
+  { when: "FEB — APR 2022", title: "Video Engineer", org: "Papa Roach · US, Canada & Mexico tour",
+    bullets: ["Video engineer for the 2022 spring tour.", "Built a custom LED wall for the band."] },
+  { when: "JUL 2018 — JAN 2021", title: "Director of IT", org: "Weldon Owen International · SF Bay Area",
+    bullets: [
+      "Supported reorganization and integration with a new parent company; migrated email to parent-company control.",
+      "Ran day-to-day operations and administration of IT infrastructure; monitored servers for business continuity.",
+      "Migrated production management tools to AWS to support work from home; implemented a disaster recovery plan.",
+      "Hired and managed a tier 1 help desk consultant; trained staff on the parent company's tools."] },
+  { when: "2007 — JAN 2021", title: "IT Director", org: "Insight Editions · San Rafael, CA",
+    bullets: [
+      "IT Director through the company's growth from a printing brokerage into a publisher with several imprints.",
+      "Helped grow the company after 2008 and enabled remote work to keep it operating in 2020."] },
+  { when: "MAY 2010 — MAY 2015", title: "Electrical Lighting Technician", org: "Felix Lighting · SF Bay Area", bullets: [] },
+  { when: "APR 2005 — 2007", title: "Director of IT", org: "Palace Press International · San Rafael, CA",
+    bullets: [
+      "Built a Linux-based Asterisk VoIP phone system and managed a Linux email server.",
+      "Ran a cross-platform Windows / Mac OS X network; desktop support and help desk for up to 50 people.",
+      "Implemented a redundant file server, offsite backups and an open-source e-commerce site."] },
+];
+/* ========================================================= */
+
+const $ = s => document.querySelector(s);
+const esc = s => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+$("#yr").textContent = new Date().getFullYear();
+
+/* ---------- render content ---------- */
+const tk = TICKER.map(t => `★ ${esc(t)} `).join(" ");
+$("#ticker").textContent = ""; $("#ticker").innerHTML = (tk + " ").repeat(2);
+
+$("#eventList").innerHTML = EVENTS.map(e => `
+  <article class="win ev">
+    <div class="bar">${esc(e.date)} <span><i></i><i></i></span></div>
+    <div class="shot">${e.image ? `<img src="${esc(e.image)}" alt="${esc(e.name)}" loading="lazy">` : "[ PHOTO ]"}</div>
+    <div class="body">
+      <div class="meta">${esc(e.venue)}</div>
+      <h3>${esc(e.name)}</h3>
+      <span class="role">${esc(e.role)}</span>
+      <p>${esc(e.desc)}</p>
+      <div class="tags">${e.tags.map(t => `<span>${esc(t)}</span>`).join("")}</div>
+      ${e.link ? `<div style="margin-top:12px;font-family:var(--crt);font-size:19px"><a href="${esc(e.link)}" target="_blank" rel="noopener">[ WATCH ]</a></div>` : ""}
+    </div>
+  </article>`).join("");
+
+const STATUS = { live: "● ONLINE", building: "◐ IN PROGRESS", archived: "○ ARCHIVED" };
+$("#projList").innerHTML = PROJECTS.map(p => `
+  <article class="win proj">
+    <div class="bar">${esc(p.name.toUpperCase().replace(/\s+/g,"_"))}.PRJ <span><i></i><i></i></span></div>
+    <div class="body">
+      <div class="status"><b>${STATUS[p.status] || ""}</b></div>
+      <h3>${esc(p.name)}</h3>
+      <p>${esc(p.desc)}</p>
+      <div class="tags">${p.tags.map(t => `<span>${esc(t)}</span>`).join("")}</div>
+      <div class="links">
+        ${p.repo ? `<a href="${esc(p.repo)}" target="_blank" rel="noopener">[ SOURCE ]</a>` : ""}
+        ${p.live ? `<a href="${esc(p.live)}" target="_blank" rel="noopener">[ VISIT ]</a>` : ""}
+      </div>
+    </div>
+  </article>`).join("");
+
+$("#jobList").innerHTML = JOBS.map(j => `
+  <li><div class="when">${esc(j.when)}</div>
+    <div><h3>${esc(j.title)}<small>${esc(j.org)}</small></h3>
+    <ul>${j.bullets.map(b => `<li>${esc(b)}</li>`).join("")}</ul></div></li>`).join("");
+
+/* ---------- boot ---------- */
+(function boot(){
+  const el = $("#bootText"), wrap = $("#boot");
+  let seen = false; try { seen = sessionStorage.getItem("booted"); } catch(e){}
+  if (reduce || seen) { wrap.classList.add("done"); startTyping(); return; }
+  const lines = [
+    "NYNEX SYSTEMS  BIOS REV 9.5",
+    "MEMORY TEST ........ 16384K OK",
+    "DIALING NYNEX.DEV ........ CONNECT 28800",
+    "HANDSHAKE ................ OK",
+    "LOADING INTERFACE ........ [##################] 100%",
+    "",
+    "WELCOME."
+  ];
+  let i = 0, done = false;
+  const finish = () => { if (done) return; done = true; wrap.classList.add("done");
+    try { sessionStorage.setItem("booted","1"); } catch(e){} startTyping(); };
+  const next = () => { if (done) return;
+    if (i < lines.length) { el.innerHTML += lines[i++] + "<br>"; setTimeout(next, 170 + Math.random()*200); }
+    else setTimeout(finish, 600); };
+  wrap.addEventListener("click", finish);
+  addEventListener("keydown", finish, { once: true });
+  next();
+})();
+
+/* ---------- typed tagline ---------- */
+function startTyping(){
+  const el = $("#typed"); let t = 0, c = 0, del = false;
+  if (reduce) { el.textContent = TAGLINES[0]; return; }
+  (function tick(){
+    const w = TAGLINES[t];
+    el.textContent = w.slice(0, c);
+    if (!del && c < w.length) c++;
+    else if (!del) { del = true; return setTimeout(tick, 1700); }
+    else if (c > 0) c--;
+    else { del = false; t = (t + 1) % TAGLINES.length; }
+    setTimeout(tick, del ? 30 : 70);
+  })();
+}
+
+/* ---------- reveal on scroll ---------- */
+const io = new IntersectionObserver(es => es.forEach(e => {
+  if (e.isIntersecting) { e.target.classList.add("in"); io.unobserve(e.target); }
+}), { threshold: .1 });
+document.querySelectorAll(".reveal").forEach(s => io.observe(s));
+
+/* ---------- Window manager ---------- */
+(function wm(){
+  const wins = [...document.querySelectorAll("section.os-win")];
+  const mobile = () => innerWidth <= 760;
+  const n = (k, w) => k + " " + w + (k === 1 ? "" : "s");
+  const STATUS = { services: n(2, "item"), events: n(EVENTS.length, "item"),
+    projects: n(PROJECTS.length, "item"), resume: n(JOBS.length, "entry").replace("entrys", "entries") };
+  let z = 30, cascade = 0;
+
+  wins.forEach(sec => {
+    const title = sec.dataset.title || sec.id.toUpperCase();
+    const body = document.createElement("div"); body.className = "os-body";
+    while (sec.firstChild) body.appendChild(sec.firstChild);
+    sec.innerHTML = `
+      <div class="os-title">
+        <button class="os-btn os-close" title="Close" aria-label="Close ${esc(title)}"></button>
+        <span class="os-name">${esc(title)}</span>
+        <button class="os-btn os-zoom" title="Zoom" aria-label="Maximize ${esc(title)}"></button>
+      </div>`;
+    sec.appendChild(body);
+    const st = document.createElement("div"); st.className = "os-status";
+    st.innerHTML = `<span>${esc(STATUS[sec.id] || "")}</span><span>nynex.dev</span>`;
+    sec.appendChild(st);
+    sec.setAttribute("role", "dialog"); sec.setAttribute("aria-label", title); sec.tabIndex = -1;
+    sec.querySelector(".os-close").addEventListener("click", () => close(sec));
+    sec.querySelector(".os-zoom").addEventListener("click", () => { sec.classList.remove("shaded"); sec.classList.toggle("max"); });
+    sec.addEventListener("pointerdown", () => focusWin(sec));
+    makeDraggable(sec);
+  });
+
+  function focusWin(sec){
+    sec.style.zIndex = ++z;
+    wins.forEach(w => w.classList.toggle("active", w === sec));
+  }
+
+  function place(sec){
+    if (sec.dataset.placed) return;
+    const w = Math.min(+sec.dataset.w || 860, innerWidth - 32);
+    const h = Math.min(innerHeight - 110, 720);
+    const off = (cascade++ % 5) * 28;
+    Object.assign(sec.style, { width: w + "px", height: h + "px",
+      left: Math.max(8, (innerWidth - w) / 2 - 56 + off) + "px", top: (64 + off) + "px" });
+    sec.dataset.placed = "1";
+  }
+
+  function zoomRects(a, b, done){
+    if (reduce || !a || !b) { done(); return; }
+    const n = 7, step = 22;
+    for (let i = 1; i <= n; i++) {
+      const t = i / n, r = document.createElement("div"); r.className = "zrect";
+      Object.assign(r.style, { left: a.left + (b.left - a.left) * t + "px", top: a.top + (b.top - a.top) * t + "px",
+        width: a.width + (b.width - a.width) * t + "px", height: a.height + (b.height - a.height) * t + "px" });
+      document.body.appendChild(r);
+      setTimeout(() => r.style.opacity = 1, i * step);
+      setTimeout(() => r.remove(), i * step + 90);
+    }
+    setTimeout(done, n * step + 30);
+  }
+
+  const iconFor = sec => document.querySelector(`.desk a[href="#${sec.id}"]`);
+
+  function open(sec, from){
+    if (!sec.hidden) { sec.classList.remove("shaded"); focusWin(sec); sec.focus({ preventScroll: true }); return; }
+    sec.hidden = false; place(sec); focusWin(sec);
+    sec.classList.add("opening");
+    const src = (from || iconFor(sec))?.getBoundingClientRect();
+    zoomRects(src, sec.getBoundingClientRect(), () => {
+      sec.classList.remove("opening"); sec.focus({ preventScroll: true });
+    });
+    history.replaceState(null, "", "#" + sec.id);
+  }
+
+  function close(sec){
+    const a = sec.getBoundingClientRect(), icon = iconFor(sec);
+    sec.hidden = true; sec.classList.remove("max", "shaded", "active");
+    zoomRects(a, icon && icon.getBoundingClientRect(), () => {});
+    if (location.hash === "#" + sec.id) history.replaceState(null, "", location.pathname + location.search);
+    const top = wins.filter(w => !w.hidden).sort((p, q) => q.style.zIndex - p.style.zIndex)[0];
+    if (top) focusWin(top); else if (icon) icon.focus({ preventScroll: true });
+  }
+
+  function makeDraggable(sec){
+    const bar = sec.querySelector(".os-title");
+    bar.addEventListener("pointerdown", e => {
+      if (e.button !== 0 || e.target.closest(".os-btn") || mobile() || sec.classList.contains("max")) return;
+      const r = sec.getBoundingClientRect(), dx = e.clientX - r.left, dy = e.clientY - r.top;
+      bar.setPointerCapture(e.pointerId); sec.classList.add("dragging");
+      const move = ev => {
+        const x = Math.max(80 - r.width, Math.min(innerWidth - 80, ev.clientX - dx));
+        const y = Math.max(0, Math.min(innerHeight - 30, ev.clientY - dy));
+        sec.style.left = x + "px"; sec.style.top = y + "px";
+      };
+      const up = () => { bar.removeEventListener("pointermove", move); bar.removeEventListener("pointerup", up);
+        bar.removeEventListener("pointercancel", up); sec.classList.remove("dragging"); };
+      bar.addEventListener("pointermove", move); bar.addEventListener("pointerup", up); bar.addEventListener("pointercancel", up);
+    });
+    // double-click the title bar to roll the window up (classic "window shade")
+    bar.addEventListener("dblclick", e => { if (!e.target.closest(".os-btn") && !mobile()) sec.classList.toggle("shaded"); });
+  }
+
+  // every internal link to a window opens it instead of scrolling
+  document.addEventListener("click", e => {
+    const a = e.target.closest('a[href^="#"]'); if (!a) return;
+    const sec = document.getElementById(a.getAttribute("href").slice(1));
+    if (sec && sec.classList.contains("os-win")) { e.preventDefault(); open(sec, a); }
+  });
+
+  addEventListener("keydown", e => {
+    if (e.key !== "Escape") return;
+    const act = wins.find(w => !w.hidden && w.classList.contains("active"));
+    if (act) close(act);
+  });
+
+  // deep links: nynex.dev/#resume opens the resume window
+  const start = location.hash && document.getElementById(location.hash.slice(1));
+  if (start && start.classList.contains("os-win")) open(start, null);
+})();
+
+/* ---------- 3D data city flythrough ---------- */
+(function city(){
+  const c = $("#city"), x = c.getContext("2d");
+  let W, H, f, dpr;
+  const size = () => { dpr = Math.min(devicePixelRatio || 1, 2); W = innerWidth; H = innerHeight;
+    c.width = W * dpr; c.height = H * dpr; x.setTransform(dpr,0,0,dpr,0,0); f = Math.min(W, H) * 0.9; };
+  size(); addEventListener("resize", size);
+
+  const FAR = 2400, ROW = 110, cols = [-420,-300,-190,-100, 60,150,260,380];
+  let towers = [];
+  const rnd = (a,b) => a + Math.random()*(b-a);
+  const make = (cx, z) => ({ x: cx + rnd(-10,10), z, w: rnd(45,75), d: rnd(45,75), h: rnd(60,340),
+    seed: Math.random()*1e5, hue: Math.random() < .12 ? "y" : "o" });
+  for (let z = 40; z < FAR; z += ROW) cols.forEach(cx => { if (Math.random() < .85) towers.push(make(cx, z + rnd(-20,20))); });
+
+  let camZ = 0; const camY = 70;
+  const P = (px, py, pz) => { const zz = pz - camZ; return [W/2 + px*f/zz, H*0.52 - (py - camY)*f/zz]; };
+
+  function draw(){
+    x.fillStyle = "#070302"; x.fillRect(0,0,W,H);
+    // horizon glow
+    const g = x.createLinearGradient(0, H*0.25, 0, H*0.6);
+    g.addColorStop(0,"rgba(255,90,0,0)"); g.addColorStop(1,"rgba(255,90,0,.22)");
+    x.fillStyle = g; x.fillRect(0, H*0.25, W, H*0.35);
+    // ground grid
+    x.strokeStyle = "rgba(255,122,0,.18)"; x.lineWidth = 1; x.beginPath();
+    for (let gx = -600; gx <= 600; gx += 60) { const a = P(gx,0,camZ+20), b = P(gx,0,camZ+FAR); x.moveTo(a[0],a[1]); x.lineTo(b[0],b[1]); }
+    const off = camZ % 60;
+    for (let gz = 60 - off; gz < FAR; gz += 60) { const a = P(-600,0,camZ+gz), b = P(600,0,camZ+gz); x.moveTo(a[0],a[1]); x.lineTo(b[0],b[1]); }
+    x.stroke();
+
+    towers.sort((a,b) => b.z - a.z);
+    for (const t of towers) {
+      const zz = t.z - camZ; if (zz < 20) continue;
+      const fade = Math.max(0, Math.min(1, 1 - zz/FAR)) ** 0.8;
+      const col = t.hue === "y" ? `rgba(255,225,74,${fade})` : `rgba(255,122,0,${fade})`;
+      const x0 = t.x, x1 = t.x + t.w, z0 = t.z, z1 = t.z + t.d, h = t.h;
+      const fbl = P(x0,0,z0), fbr = P(x1,0,z0), ftr = P(x1,h,z0), ftl = P(x0,h,z0);
+      const btl = P(x0,h,z1), btr = P(x1,h,z1), bbl = P(x0,0,z1), bbr = P(x1,0,z1);
+      x.fillStyle = "rgba(10,4,1,.95)"; x.strokeStyle = col; x.lineWidth = 1;
+      const poly = (pts) => { x.beginPath(); x.moveTo(pts[0][0],pts[0][1]); for (const p of pts.slice(1)) x.lineTo(p[0],p[1]); x.closePath(); x.fill(); x.stroke(); };
+      // inner side face (facing the street)
+      if (x1 < 0) poly([fbr, bbr, btr, ftr]); else if (x0 > 0) poly([fbl, bbl, btl, ftl]);
+      if (h < camY) poly([ftl, ftr, btr, btl]); // roof visible only when below camera
+      poly([fbl, fbr, ftr, ftl]);
+      // windows
+      const cw = (ftr[0]-ftl[0]), ch = (fbl[1]-ftl[1]);
+      if (cw > 14) {
+        const nx = 4, ny = Math.max(2, Math.floor(h/22));
+        let s = t.seed;
+        for (let iy = 0; iy < ny; iy++) for (let ix = 0; ix < nx; ix++) {
+          s = (s * 9301 + 49297) % 233280;
+          if (s / 233280 < .45) continue;
+          x.fillStyle = (s % 7 === 0) ? `rgba(255,59,31,${fade})` : `rgba(255,176,0,${fade*.85})`;
+          x.fillRect(ftl[0] + cw*(ix+.25)/nx, ftl[1] + ch*(iy+.3)/ny, cw*.45/nx, ch*.35/ny);
+        }
+      }
+    }
+  }
+
+  function frame(){
+    camZ += 2.2;
+    for (const t of towers) if (t.z - camZ < 20) { const n = make(cols[Math.floor(Math.random()*cols.length)], t.z + FAR); Object.assign(t, n); }
+    draw(); requestAnimationFrame(frame);
+  }
+  if (reduce) draw(); else frame();
+})();
+</script>
+</body>
+</html>
