@@ -20,3 +20,17 @@ DNS for the apex domain: four `A` records to `185.199.108.153`, `185.199.109.153
 
 ## To add
 - `resume.pdf` (the Download PDF button links to it)
+
+## Project status
+
+**Status:** Waiting on Callum  
+**Waiting on:** HTTPS  
+**Notes:** Personal site on GitHub Pages.  
+**Last updated:** 2026-10-28
+
+### Task list
+
+- [ ] fix https
+- [ ] fix dns
+- [ ] scrape for personal data
+
