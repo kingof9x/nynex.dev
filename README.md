@@ -23,10 +23,10 @@ DNS for the apex domain: four `A` records to `185.199.108.153`, `185.199.109.153
 
 ## Project status
 
-**Status:** Waiting on Callum  
+**Status:** Waiting on developer  
 **Waiting on:** HTTPS  
 **Notes:** Personal site on GitHub Pages.  
-**Last updated:** 2026-10-28
+**Last updated:** 2026-11-02
 
 ### Task list
 
