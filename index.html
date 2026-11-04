@@ -179,7 +179,55 @@ section{padding:80px 0 0;scroll-margin-top:70px}
   .os-body{padding:14px}
 }
 
-footer{text-align:center;padding:60px 16px 40px;font-size:13px;color:var(--dim)}
+/* ---------- Terminal ---------- */
+#terminal .os-body{padding:0;display:flex;flex-direction:column;background:#030100;overflow:hidden}
+.term{flex:1;overflow-y:auto;padding:12px 14px 18px;font-family:var(--crt);font-size:21px;line-height:1.15;color:var(--amber);
+  text-shadow:0 0 6px rgba(255,122,0,.55);scrollbar-color:var(--orange) #1a0a02;cursor:text;
+  background:radial-gradient(ellipse at 50% 40%,rgba(255,122,0,.07),transparent 70%)}
+.term-out{white-space:pre-wrap;word-break:break-word}
+.term-out div{min-height:1.15em}
+.term .art{white-space:pre}
+.term-out div:has(.art){overflow-x:auto;overflow-y:hidden;scrollbar-width:none}
+@media (max-width:760px){.term{font-size:18px}}
+.term-line{display:flex;gap:8px;align-items:baseline}
+.term-ps{flex:none;color:var(--orange);white-space:pre}
+.term-in{flex:1;min-width:0;background:transparent;border:0;outline:0;color:var(--yellow);font:inherit;text-shadow:inherit;caret-color:var(--orange);padding:0}
+.term-line.busy{display:none}
+.term .o{color:var(--orange)} .term .y{color:var(--yellow)} .term .r{color:var(--red);text-shadow:0 0 8px rgba(255,59,31,.7)}
+.term .g{color:var(--acid);text-shadow:0 0 8px rgba(198,255,0,.5)} .term .d{color:var(--dim);text-shadow:none} .term .w{color:var(--text)}
+.term .inv{background:var(--orange);color:#000;text-shadow:none;padding:0 4px}
+.term .blink{animation:blink 1s steps(1) infinite}
+.term .cmdlink{color:var(--yellow);text-decoration:underline dotted;cursor:pointer}
+#terminal.shake{animation:shake .4s}
+@keyframes shake{20%{transform:translate(-6px,2px)}40%{transform:translate(5px,-3px)}60%{transform:translate(-4px,-2px)}80%{transform:translate(3px,3px)}}
+
+/* ---------- Taskbar ---------- */
+#taskbar{position:fixed;left:0;right:0;bottom:0;z-index:29;height:34px;display:flex;align-items:center;gap:6px;padding:3px 6px;
+  background:#120802;border-top:2px solid var(--orange);box-shadow:0 -6px 24px rgba(255,122,0,.15);font-family:var(--crt);font-size:19px}
+#taskbar button{font:inherit;cursor:pointer;height:26px;padding:0 10px;color:var(--amber);background:#0d0602;letter-spacing:.06em;white-space:nowrap;
+  border:2px solid #000;box-shadow:inset 2px 2px 0 var(--amber),inset -2px -2px 0 #6b2a00}
+#taskbar button:hover{color:#000;background:var(--orange)}
+#taskbar button:focus-visible{outline:2px solid var(--yellow);outline-offset:1px}
+#taskbar button.on{color:#000;background:var(--amber);box-shadow:inset 2px 2px 0 #6b2a00,inset -2px -2px 0 var(--yellow)}
+#startBtn{color:#000!important;background:var(--orange)!important;font-family:var(--disp)!important;font-size:14px!important;letter-spacing:.14em!important}
+#startBtn:hover{background:var(--yellow)!important}
+#tasks{flex:1;display:flex;gap:6px;overflow:hidden;min-width:0}
+#tasks button{overflow:hidden;text-overflow:ellipsis;max-width:200px}
+#tray{flex:none;display:flex;gap:10px;align-items:center;height:26px;padding:0 10px;color:var(--dim);border:2px solid #000;box-shadow:inset 2px 2px 0 #6b2a00,inset -2px -2px 0 #2a1405}
+#tray .led{color:var(--acid);text-shadow:0 0 6px var(--acid);animation:blink 2.4s steps(1) infinite}
+#clock{color:var(--amber)}
+@media (max-width:760px){ #tray .hint{display:none} #tasks button{max-width:110px} }
+
+/* ---------- Hack the planet ---------- */
+#htp{position:fixed;inset:0;z-index:120;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:10px;pointer-events:none;
+  background:rgba(0,0,0,.82);opacity:0;transition:opacity .25s}
+#htp.on{opacity:1}
+#htp b{font-family:var(--disp);font-weight:400;font-size:clamp(40px,11vw,140px);line-height:1;color:var(--yellow);text-align:center;
+  text-shadow:4px 4px 0 var(--red),0 0 40px var(--orange);animation:htp .18s steps(2) infinite}
+#htp span{font-family:var(--crt);font-size:24px;color:var(--orange);letter-spacing:.3em}
+@keyframes htp{50%{color:var(--orange);transform:skewX(-8deg) translateX(4px)}}
+
+footer{text-align:center;padding:60px 16px 70px;font-size:13px;color:var(--dim)}
 footer .big{font-family:var(--disp);font-size:clamp(18px,4vw,30px);color:var(--orange);text-shadow:3px 3px 0 var(--red);letter-spacing:.14em;margin-bottom:10px}
 
 .reveal{opacity:0;transform:translateY(24px);transition:opacity .7s,transform .7s}
@@ -211,6 +259,7 @@ footer .big{font-family:var(--disp);font-size:clamp(18px,4vw,30px);color:var(--o
       <li><a href="#events">Events</a></li>
       <li><a href="#projects">Projects</a></li>
       <li><a href="#resume">Resume</a></li>
+      <li><a href="#terminal">&gt;_ Term</a></li>
     </ul>
   </nav>
   <div class="ticker"><div id="ticker"></div></div>
@@ -237,6 +286,9 @@ footer .big{font-family:var(--disp);font-size:clamp(18px,4vw,30px);color:var(--o
       <a class="icon" href="#resume">
         <svg viewBox="0 0 32 32" aria-hidden="true"><path d="M7 3h13l5 5v21H7z" fill="#160a02" stroke="#ff7a00" stroke-width="2"/><path d="M20 3v5h5" fill="none" stroke="#ff7a00" stroke-width="2"/><g fill="#ffb000"><rect x="10" y="12" width="12" height="2"/><rect x="10" y="16" width="12" height="2"/><rect x="10" y="20" width="9" height="2"/><rect x="10" y="24" width="11" height="2"/></g></svg>
         <span>Resume</span></a>
+      <a class="icon" href="#terminal">
+        <svg viewBox="0 0 32 32" aria-hidden="true"><rect x="3" y="4" width="26" height="22" fill="#030100" stroke="#ff7a00" stroke-width="2"/><rect x="3" y="4" width="26" height="4" fill="#ff7a00"/><path d="M7 13l4 3-4 3" fill="none" stroke="#ffb000" stroke-width="2"/><rect x="13" y="18" width="8" height="2" fill="#ffe14a"/><rect x="9" y="27" width="14" height="2" fill="#ff7a00"/></svg>
+        <span>Terminal</span></a>
       <a class="icon" href="https://www.linkedin.com/in/callum-davenport-3a160013a/" target="_blank" rel="noopener">
         <svg viewBox="0 0 32 32" aria-hidden="true"><rect x="3" y="7" width="26" height="18" fill="#160a02" stroke="#ff7a00" stroke-width="2"/><rect x="7" y="11" width="7" height="7" fill="#ffb000"/><rect x="6" y="19" width="9" height="3" fill="#ffb000"/><g fill="#ff7a00"><rect x="17" y="12" width="9" height="2"/><rect x="17" y="16" width="7" height="2"/><rect x="17" y="20" width="8" height="2"/></g></svg>
         <span>LinkedIn ↗</span></a>
@@ -316,7 +368,22 @@ footer .big{font-family:var(--disp);font-size:clamp(18px,4vw,30px);color:var(--o
     </div>
   </section>
 
+  <!-- ================= TERMINAL (see terminal.js) ================= -->
+  <section id="terminal" class="os-win" hidden data-title="NYNEX TERMINAL — /dev/tty2600" data-task="TERMINAL" data-w="780">
+    <div class="term" id="term">
+      <div class="term-out" id="termOut" aria-live="polite"></div>
+      <label class="term-line" id="termLine"><span class="term-ps" id="termPs">guest@nynex:~$</span><input class="term-in" id="termIn" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" aria-label="Terminal command"></label>
+    </div>
+  </section>
+
 </main>
+
+<div id="taskbar">
+  <button id="startBtn" title="Open the terminal (~)">NYNEX</button>
+  <div id="tasks"></div>
+  <div id="tray"><span class="hint">press ~ for terminal</span><span class="led" title="Gibson link">◆</span><span id="clock"></span></div>
+</div>
+<div id="htp" aria-hidden="true"><b>HACK THE<br>PLANET</b><span>// NYNEX.DEV</span></div>
 
 <footer>
   <div class="big">ALWAYS ON. NEVER OFFLINE.</div>
@@ -341,7 +408,7 @@ const TAGLINES = [
 
 const TICKER = [
   "VIDEO ENGINEER", "LED TECH / EIC", "IT CONSULTING — MARIN COUNTY", "LIVE ENTERTAINMENT",
-  "TV BROADCAST & LIVE EVENT", "IT STRATEGY & LEADERSHIP"
+  "TV BROADCAST & LIVE EVENT", "IT STRATEGY & LEADERSHIP", "PRESS ~ TO OPEN THE TERMINAL"
 ];
 
 /* image: photo path or URL (blank = placeholder). link: optional video/photo link */
@@ -447,6 +514,7 @@ $("#jobList").innerHTML = JOBS.map(j => `
     "MEMORY TEST ........ 16384K OK",
     "DIALING NYNEX.DEV ........ CONNECT 28800",
     "HANDSHAKE ................ OK",
+    "GIBSON LINK .............. STANDBY",
     "LOADING INTERFACE ........ [##################] 100%",
     "",
     "WELCOME."
@@ -489,7 +557,8 @@ document.querySelectorAll(".reveal").forEach(s => io.observe(s));
   const mobile = () => innerWidth <= 760;
   const n = (k, w) => k + " " + w + (k === 1 ? "" : "s");
   const STATUS = { services: n(2, "item"), events: n(EVENTS.length, "item"),
-    projects: n(PROJECTS.length, "item"), resume: n(JOBS.length, "entry").replace("entrys", "entries") };
+    projects: n(PROJECTS.length, "item"), resume: n(JOBS.length, "entry").replace("entrys", "entries"),
+    terminal: "tty2600 · 9600 baud" };
   let z = 30, cascade = 0;
 
   wins.forEach(sec => {
@@ -516,7 +585,20 @@ document.querySelectorAll(".reveal").forEach(s => io.observe(s));
   function focusWin(sec){
     sec.style.zIndex = ++z;
     wins.forEach(w => w.classList.toggle("active", w === sec));
+    tasks();
   }
+
+  // taskbar: one button per open window
+  function tasks(){
+    $("#tasks").innerHTML = wins.filter(w => !w.hidden).map(w =>
+      `<button data-win="${w.id}" class="${w.classList.contains("active") ? "on" : ""}">${esc(w.dataset.task || (w.dataset.title || w.id).split(" ")[0])}</button>`).join("");
+  }
+  $("#tasks").addEventListener("click", e => {
+    const b = e.target.closest("button[data-win]"); if (!b) return;
+    const sec = document.getElementById(b.dataset.win);
+    if (sec.classList.contains("active") && !sec.classList.contains("shaded")) { sec.classList.add("shaded"); }
+    else open(sec, b);
+  });
 
   function place(sec){
     if (sec.dataset.placed) return;
@@ -561,7 +643,7 @@ document.querySelectorAll(".reveal").forEach(s => io.observe(s));
     zoomRects(a, icon && icon.getBoundingClientRect(), () => {});
     if (location.hash === "#" + sec.id) history.replaceState(null, "", location.pathname + location.search);
     const top = wins.filter(w => !w.hidden).sort((p, q) => q.style.zIndex - p.style.zIndex)[0];
-    if (top) focusWin(top); else if (icon) icon.focus({ preventScroll: true });
+    if (top) focusWin(top); else { tasks(); if (icon) icon.focus({ preventScroll: true }); }
   }
 
   function makeDraggable(sec){
@@ -595,6 +677,9 @@ document.querySelectorAll(".reveal").forEach(s => io.observe(s));
     const act = wins.find(w => !w.hidden && w.classList.contains("active"));
     if (act) close(act);
   });
+
+  window.NYNEX = { open: id => { const s = document.getElementById(id); if (s) open(s, null); },
+    close: id => { const s = document.getElementById(id); if (s && !s.hidden) close(s); } };
 
   // deep links: nynex.dev/#resume opens the resume window
   const start = location.hash && document.getElementById(location.hash.slice(1));
@@ -668,6 +753,13 @@ document.querySelectorAll(".reveal").forEach(s => io.observe(s));
   }
   if (reduce) draw(); else frame();
 })();
+
+/* ---------- taskbar clock ---------- */
+(function clock(){
+  const el = $("#clock"), t = () => el.textContent = new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+  t(); setInterval(t, 15000);
+})();
 </script>
+<script src="terminal.js"></script>
 </body>
 </html>
