@@ -205,7 +205,8 @@
   // the hex viewer window: click the row the worm is hiding in
   function renderGarbage(){
     const v = $("#hexView"); if (!v) return;
-    let html = `<div class="d" style="color:var(--dim)">offset  00 01 02 03 04 05 06 07 08 09 0a 0b 0c 0d 0e 0f  ascii           · spot anything odd? click it.</div>`;
+    if (!S.gibson) { v.innerHTML = `<div class="locked">garbage.dat<b>ON THE GIBSON</b><button class="btn" data-run="hack gibson">HACK IN</button></div>`; return; }
+    let html = `<div class="d" style="color:var(--dim)">offset  00 01 02 03 04 05 06 07 08 09 0a 0b 0c 0d 0e 0f  ascii           · spot anything odd? click it. stare into the middle and you might fall in.</div>`;
     for (let i = 0; i < ROWS; i++) {
       const r = garbageRow(i);
       html += `<button data-row="${i}"${S.wormFound && r.worm ? ' class="found"' : ""}><span class="off">${r.off}</span>  ${r.hex}  <span class="asc">${esc(r.asc)}</span></button>`;
@@ -215,7 +216,19 @@
   document.addEventListener("click", e => {
     const b = e.target.closest("#hexView button[data-row]"); if (!b) return;
     if (+b.dataset.row === WORM_ROW) { b.classList.add("found"); findWorm(b.getBoundingClientRect()); }
+    else if (inMiddle(e)) FX.numbers.start(e.clientX, e.clientY);
     else { b.classList.remove("miss"); void b.offsetWidth; b.classList.add("miss"); }
+  });
+  // the middle of the document is where you "go into the numbers"
+  function inMiddle(e){
+    const body = $("#garbage .os-body"); if (!body) return false;
+    const r = body.getBoundingClientRect(), u = (e.clientX - r.left) / r.width, v = (e.clientY - r.top) / r.height;
+    return u > .25 && u < .75 && v > .3 && v < .7;
+  }
+  // also catch clicks in the middle that land between rows
+  document.addEventListener("click", e => {
+    if (!e.target.closest("#garbage .os-body") || e.target.closest("#hexView button")) return;
+    if (inMiddle(e)) FX.numbers.start(e.clientX, e.clientY);
   });
   function openGarbage(){
     if (!S.gibson) { openWin("gibson"); return false; }
@@ -379,7 +392,7 @@
     await bar("disabling the trace ....", 700);
     await FX.dive();
     S.gibson = true; S.cwd = "/gibson";
-    renderGibson(); renderFolders(); openWin("gibson");
+    renderGibson(); renderFolders(); renderGarbage(); openWin("gibson");
     print("");
     print(h("y", "You're in the Gibson.") + " Nobody really looks at the " + h("o", "garbage") + " file, do they?", true);
     print(`open ${cmd("cat garbage.dat")} and find the row that doesn't belong.`, true);
@@ -598,9 +611,11 @@
     konami(){ print(h("d", "you know the code. try it on the page itself, not in here."), true); },
     secret(){ print(h("d", "that's one of the four. you're getting warmer."), true); },
     god(){ C.secret(); }, love(){ C.secret(); },
+    numbers(){ print(h("d", "going into the numbers. move the mouse or press a key to come back."), true); setTimeout(() => FX.numbers.start(), 400); },
+    screensaver(){ return C.numbers(); },
     cookie(){ print(h("d", "nothing is asking for a cookie right now. ") + cmd("run cookie"), true); },
   };
-  const NAMES = Object.keys(C).filter(k => !["god","love","secret","cls","dir","more","less","type","su","quit","passwd","nano","vim","rollerblades","payphone","sysinfo","grep","find","mess"].includes(k));
+  const NAMES = Object.keys(C).filter(k => !["god","love","secret","cls","dir","more","less","type","su","quit","passwd","nano","vim","rollerblades","payphone","sysinfo","grep","find","mess","screensaver"].includes(k));
 
   /* ---------- dispatch ---------- */
   async function exec(raw){
@@ -736,6 +751,16 @@
     }
   };
 
-  renderFolders(); renderGibson();
+  // a real screensaver: after a few idle minutes, the numbers take over on their own
+  let idleT;
+  const IDLE_MS = 3 * 60 * 1000;
+  const idle = () => { clearTimeout(idleT); idleT = setTimeout(() => {
+    const busyFx = FX.davinci.on || FX.cookie.on || FX.rabbit.on || FX.pong.on || document.querySelector(".dive");
+    if (!busyFx && !document.hidden) FX.numbers.start(); else idle();
+  }, IDLE_MS); };
+  ["pointermove", "pointerdown", "keydown", "wheel", "touchstart", "scroll"].forEach(t => addEventListener(t, idle, { passive: true }));
+  idle();
+
+  renderFolders(); renderGibson(); renderGarbage();
   prompt();
 })();
