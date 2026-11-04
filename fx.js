@@ -437,11 +437,32 @@
     "10110011 01101001", "Ω = 2π / T", "∞", "π", "∑", "∫", "√2", "∂", "θ", "Δ", "x³ − 3x + 1", "n! ≈ √(2πn)(n/e)ⁿ",
     "i² = −1", "log₂ 4096000", "ƒ(t) = Σ aₙ cos(nωt)", "|ψ⟩ = α|0⟩ + β|1⟩", "SALAMI = Σ 0.01", "1.618033988",
     "3.14159265358979", "2.71828182845", "GIBSON", "[ 1 0 0 ]\n[ 0 1 0 ]\n[ 0 0 1 ]", "[ cos θ  −sin θ ]\n[ sin θ   cos θ ]",
+    "∇·E = ρ/ε₀", "∇·B = 0", "iħ ∂ψ/∂t = Ĥψ", "G_μν + Λg_μν = 8πG T_μν", "∫∫_S (∇×F)·dS = ∮_C F·dr", "e^x = Σ xⁿ/n!",
+    "sin x = x − x³/3! + x⁵/5! − …", "Γ(n) = (n−1)!", "∂f/∂x + ∂f/∂y", "lim(n→∞) (1 + 1/n)ⁿ = e", "ℒ{f(t)} = ∫ e^(−st) f(t) dt",
+    "F(ω) = ∫ f(t) e^(−iωt) dt", "H = −Σ p log₂ p", "a ≡ b (mod n)", "gcd(a, b) = gcd(b, a mod b)", "O(n log n)", "2⁶⁴ − 1",
+    "Fₙ = Fₙ₋₁ + Fₙ₋₂", "1, 1, 2, 3, 5, 8, 13, 21", "2, 3, 5, 7, 11, 13, 17", "x' = x cos θ − y sin θ", "R = V / I", "PV = nRT",
+    "S = k log W", "∂L/∂q − d/dt(∂L/∂q̇) = 0", "c = 299 792 458 m/s", "z → z² + c", "|z| ≤ 2", "A ∪ B ∩ C", "¬(p ∧ q) ⇔ ¬p ∨ ¬q",
+    "ℵ₀", "∅", "ℝ³", "∈ ℤ", "√−1", "dθ/dt = ω", "τ = r × F", "∮ E·dA = Q/ε₀", "XOR 0xFF", "CRC32 0x2600", "PING 1995ms",
+    "[ a b ]\n[ c d ]", "⎡ 3 1 4 ⎤\n⎢ 1 5 9 ⎥\n⎣ 2 6 5 ⎦", "∫ sec x dx = ln|sec x + tan x|", "y = mx + b", "r = a(1 − cos θ)",
   ];
   const COLORS = ["#ffb000", "#ff7a00", "#ffe14a", "#ff3b1f", "#ffe9cf", "#c6ff00"];
   // layers of the page that fade away (fixed overlays are left alone)
   // (never main itself: a filter there would re-anchor the fixed windows inside it)
-  const layers = () => [...document.querySelectorAll("header, main > .hero, footer, #taskbar, #city")];
+  // the data city in the background stays, just softly blurred
+  const layers = () => [...document.querySelectorAll("header, main > .hero, footer, #taskbar")];
+  const city = () => document.getElementById("city");
+  NB.rows = null; // terminal.js supplies garbage.dat rows: () => [{ hex, asc }]
+  const HX = "0123456789ABCDEF";
+  const hexStr = n => Array.from({ length: n }, () => HX[Math.random() * 16 | 0] + HX[Math.random() * 16 | 0]).join(" ");
+  function garbageBit(){
+    const rows = NB.rows ? NB.rows() : null;
+    if (!rows || !rows.length) return Math.random() < .5 ? hexStr(8) : hexStr(4);
+    const r = rows[Math.random() * rows.length | 0], m = Math.random();
+    if (m < .4) return r.hex;                                   // a full hex row
+    if (m < .7) return r.asc;                                   // its ascii column
+    if (m < .85) return `${r.off}  ${r.hex.slice(0, 23)}`;      // offset + half a row
+    return `${r.hex.slice(0, 11)}  ${r.asc}`;
+  }
 
   NB.start = function(ox, oy){
     if (NB.on) return false;
@@ -457,7 +478,8 @@
     size(); addEventListener("resize", size);
 
     // the page slowly melts away: blur, fade, drift back
-    const L = layers();
+    const L = layers(), cy = city();
+    if (cy) { cy.style.transition = "filter 6s ease-in"; requestAnimationFrame(() => cy.style.filter = "blur(3px) brightness(.85) saturate(1.2)"); }
     L.forEach(e => { e.style.transition = "filter 9s ease-in, opacity 9s ease-in, transform 9s ease-in"; e.style.transformOrigin = `${ox}px ${oy}px`; });
     requestAnimationFrame(() => L.forEach(e => { e.style.filter = "blur(6px) sepia(1) saturate(3) hue-rotate(-15deg)"; e.style.opacity = "0"; e.style.transform = "scale(.86)"; }));
     document.querySelectorAll(".os-win:not([hidden])").forEach(w => { w.style.transition = "opacity 6s ease-in, filter 6s"; w.style.opacity = "0"; w.style.filter = "blur(4px)"; });
@@ -466,13 +488,15 @@
     const items = [];
     const spawn = (z, burst) => {
       const r = Math.random();
-      const kind = r < .74 ? "text" : r < .88 ? "cube" : "wave";
-      items.push({ kind, txt: MATH[Math.random() * MATH.length | 0], col: COLORS[Math.random() * COLORS.length | 0],
+      const kind = r < .5 ? "text" : r < .72 ? "hex" : r < .82 ? "stream" : r < .92 ? "cube" : "wave";
+      const txt = kind === "hex" ? garbageBit() : kind === "stream" ? Array.from({ length: 10 + Math.random() * 14 | 0 }, () => HX[Math.random() * 16 | 0]).join("") : MATH[Math.random() * MATH.length | 0];
+      items.push({ kind, txt, col: kind === "hex" ? (Math.random() < .7 ? "#ff7a00" : "#ffb000") : kind === "stream" ? "#c6ff00" : COLORS[Math.random() * COLORS.length | 0],
+        swirl: rnd(.6, 1.4) * (Math.random() < .5 ? -1 : 1), fall: kind === "stream" ? rnd(5, 11) : 0,
         x: burst ? (ox - innerWidth / 2) * z / f + rnd(-40, 40) : rnd(-1400, 1400), y: burst ? (oy - innerHeight / 2) * z / f + rnd(-40, 40) : rnd(-900, 900), z,
         vx: burst ? rnd(-4, 4) : rnd(-1, 1), vy: burst ? rnd(-3, 3) : rnd(-.8, .8), vz: burst ? rnd(-2.5, -.8) : rnd(-3.2, -1.2),
         rot: rnd(0, 6.28), vr: rnd(-.012, .012), yaw: rnd(0, 6.28), vyaw: rnd(-.015, .015), size: rnd(34, 78), born: performance.now() });
     };
-    for (let i = 0; i < 36; i++) spawn(rnd(500, 1300), true);
+    for (let i = 0; i < 60; i++) spawn(rnd(500, 1400), true);
     const t0 = performance.now();
     let last = t0;
 
@@ -504,18 +528,24 @@
       if (!NB.on) return;
       const dt = Math.min(3, (now - last) / 16.7); last = now;
       const age = (now - t0) / 1000;
-      // background deepens from see-through to solid as the numbers take over
+      // a dark veil deepens, but the blurred city still glows through it
       const bg = Math.min(1, age / 9);
       x.globalAlpha = 1;
       x.clearRect(0, 0, W, H);
-      x.fillStyle = `rgba(4,1,0,${bg * .97})`; x.fillRect(0, 0, W, H);
-      if (items.length < 40 + Math.min(70, age * 7)) spawn(rnd(1400, 2400), false);
-      // camera drifts slowly so the whole field breathes
-      const camX = Math.sin(age * .13) * 160, camY = (Math.cos(age * .1) - 1) * 90;
+      x.fillStyle = `rgba(4,1,0,${bg * .5})`; x.fillRect(0, 0, W, H);
+      while (items.length < 70 + Math.min(80, age * 10)) spawn(rnd(1400, 2600), false);
+      // the camera drifts, rolls and surges forward in waves so nothing sits still
+      const camX = Math.sin(age * .23) * 260, camY = Math.sin(age * .17) * 140;
+      const surge = 1 + Math.max(0, Math.sin(age * .7)) * 2.2;          // periodic rush forward
+      const swirl = .0035 * (1 + Math.sin(age * .31) * .8);             // the whole field spins around you
+      const roll = Math.sin(age * .19) * .22;
+      x.save(); x.translate(W / 2, H / 2); x.rotate(roll); x.translate(-W / 2, -H / 2);
       items.sort((a, b) => b.z - a.z);
       for (let i = items.length - 1; i >= 0; i--) {
         const it = items[i];
-        it.x += it.vx * dt; it.y += it.vy * dt; it.z += it.vz * dt; it.rot += it.vr * dt; it.yaw += it.vyaw * dt;
+        const a = swirl * it.swirl * dt, ca = Math.cos(a), sa = Math.sin(a);
+        [it.x, it.y] = [it.x * ca - it.y * sa, it.x * sa + it.y * ca];
+        it.x += it.vx * dt; it.y += (it.vy + it.fall) * dt; it.z += it.vz * surge * dt; it.rot += it.vr * dt; it.yaw += it.vyaw * dt;
         it.vx *= .995; it.vy *= .995;
         if (it.z < 40) { items.splice(i, 1); continue; }
       }
@@ -527,13 +557,26 @@
         if (alpha <= .02) continue;
         if (it.kind === "cube") { cube(it, sx, sy, sc, alpha); continue; }
         if (it.kind === "wave") { wave(it, sx, sy, sc, alpha, now); continue; }
+        if (it.kind === "stream") {
+          // a falling column of hex, bright at the head
+          const fs = Math.max(6, it.size * sc * .7);
+          x.font = `${fs}px VT323, monospace`; x.textAlign = "center";
+          const chars = it.txt, n = chars.length, shift = Math.floor(now / 90 + it.rot * 10);
+          for (let k = 0; k < n; k++) {
+            x.globalAlpha = alpha * (k === n - 1 ? 1 : (k + 1) / n * .8);
+            x.fillStyle = k === n - 1 ? "#ffe9cf" : it.col;
+            x.fillText(chars[(k + shift) % n], sx, sy + (k - n) * fs * .95);
+          }
+          continue;
+        }
         x.save(); x.translate(sx, sy); x.rotate(Math.sin(it.rot) * .25); x.scale(Math.max(.15, Math.abs(Math.cos(it.yaw))), 1);
         x.globalAlpha = alpha; x.fillStyle = it.col; x.textAlign = "center"; x.textBaseline = "middle";
-        x.font = `${Math.max(6, it.size * sc)}px VT323, "IBM Plex Mono", monospace`;
-        if (it.z < 500) { x.shadowColor = it.col; x.shadowBlur = 12; }
+        x.font = `${Math.max(6, it.size * sc * (it.kind === "hex" ? .7 : 1))}px VT323, "IBM Plex Mono", monospace`;
+        if (it.z < 380) { x.shadowColor = it.col; x.shadowBlur = 10; }
         it.txt.split("\n").forEach((ln, k, all) => x.fillText(ln, 0, (k - (all.length - 1) / 2) * it.size * sc * 1.05));
         x.restore();
       }
+      x.restore();
       x.globalAlpha = 1;
       requestAnimationFrame(step);
     };
@@ -562,6 +605,7 @@
     NB.cleanupResize();
     // snap back: quick, not slow
     layers().forEach(e => { e.style.transition = "filter .25s, opacity .25s, transform .25s"; e.style.filter = e.style.opacity = e.style.transform = ""; });
+    const cy = city(); if (cy) { cy.style.transition = "filter .25s"; cy.style.filter = ""; setTimeout(() => cy.style.transition = "", 300); }
     document.querySelectorAll(".os-win").forEach(w => { w.style.transition = "opacity .25s, filter .25s"; w.style.opacity = w.style.filter = ""; });
     const d = NB.el; d.style.transition = "opacity .25s"; d.style.opacity = 0;
     setTimeout(() => { d.remove(); layers().forEach(e => e.style.transition = e.style.transformOrigin = ""); document.querySelectorAll(".os-win").forEach(w => w.style.transition = ""); }, 300);
