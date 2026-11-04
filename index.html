@@ -179,6 +179,27 @@ section{padding:80px 0 0;scroll-margin-top:70px}
   .os-body{padding:14px}
 }
 
+/* ---------- Folder windows ---------- */
+.files{display:flex;flex-wrap:wrap;gap:12px 8px}
+.file{width:104px;display:flex;flex-direction:column;align-items:center;gap:4px;padding:8px 2px;background:none;border:1px dashed transparent;cursor:pointer;
+  color:var(--text);font-family:var(--crt);font-size:18px;line-height:1.1;text-align:center;word-break:break-all}
+.file svg{width:46px;height:46px;shape-rendering:crispEdges}
+.file:hover,.file:focus-visible{border-color:var(--orange);background:rgba(255,122,0,.1);outline:none;color:var(--yellow)}
+.file small{color:var(--dim);font-size:15px}
+.folder-note{font-family:var(--crt);font-size:19px;color:var(--dim);margin-top:16px;border-top:1px dashed var(--line);padding-top:10px}
+.locked{text-align:center;font-family:var(--crt);font-size:22px;padding:20px 10px}
+.locked b{display:block;font-family:var(--disp);font-weight:400;font-size:clamp(30px,6vw,52px);color:var(--red);text-shadow:3px 3px 0 #000,0 0 20px var(--red);letter-spacing:.1em;margin:10px 0}
+.locked .btn{margin-top:16px;cursor:pointer}
+.hex{font-family:var(--crt);font-size:18px;line-height:1.15;white-space:pre}
+.hex button{display:block;width:100%;text-align:left;font:inherit;background:none;border:0;color:var(--orange);cursor:pointer;padding:0 4px;white-space:pre}
+.hex button:hover{background:rgba(255,122,0,.15)}
+.hex .off{color:var(--dim)} .hex .asc{color:var(--amber)}
+.hex button.found{background:var(--red);color:#000} .hex button.found span{color:#000}
+.hex button.miss{animation:miss .3s}
+@keyframes miss{50%{background:rgba(255,59,31,.35)}}
+#garbage .os-body{padding:12px}
+@media (max-width:760px){.hex{font-size:12px}}
+
 /* ---------- Terminal ---------- */
 #terminal .os-body{padding:0;display:flex;flex-direction:column;background:#030100;overflow:hidden}
 .term{flex:1;overflow-y:auto;padding:12px 14px 18px;font-family:var(--crt);font-size:21px;line-height:1.15;color:var(--amber);
@@ -289,6 +310,15 @@ footer .big{font-family:var(--disp);font-size:clamp(18px,4vw,30px);color:var(--o
       <a class="icon" href="#terminal">
         <svg viewBox="0 0 32 32" aria-hidden="true"><rect x="3" y="4" width="26" height="22" fill="#030100" stroke="#ff7a00" stroke-width="2"/><rect x="3" y="4" width="26" height="4" fill="#ff7a00"/><path d="M7 13l4 3-4 3" fill="none" stroke="#ffb000" stroke-width="2"/><rect x="13" y="18" width="8" height="2" fill="#ffe14a"/><rect x="9" y="27" width="14" height="2" fill="#ff7a00"/></svg>
         <span>Terminal</span></a>
+      <a class="icon" href="#gibson">
+        <svg viewBox="0 0 32 32" aria-hidden="true"><g fill="#160a02" stroke="#ff7a00" stroke-width="2"><rect x="3" y="9" width="7" height="19"/><rect x="12" y="3" width="8" height="25"/><rect x="22" y="9" width="7" height="19"/></g><g fill="#ffb000"><rect x="5" y="12" width="3" height="2"/><rect x="5" y="17" width="3" height="2"/><rect x="14" y="7" width="4" height="2"/><rect x="14" y="12" width="4" height="2" fill="#ff3b1f"/><rect x="14" y="17" width="4" height="2"/><rect x="24" y="12" width="3" height="2"/><rect x="24" y="20" width="3" height="2" fill="#ffe14a"/></g><rect x="1" y="28" width="30" height="2" fill="#ff7a00"/></svg>
+        <span>Gibson</span></a>
+      <a class="icon" href="#viruses">
+        <svg viewBox="0 0 32 32" aria-hidden="true"><path d="M3 8h10l3 3h13v17H3z" fill="#160a02" stroke="#ff7a00" stroke-width="2"/><path d="M16 14l7 12H9z" fill="#ff3b1f" stroke="#000" stroke-width="1"/><rect x="15" y="17" width="2" height="5" fill="#000"/><rect x="15" y="23" width="2" height="2" fill="#000"/></svg>
+        <span>Viruses</span></a>
+      <a class="icon" href="#trash">
+        <svg viewBox="0 0 32 32" aria-hidden="true"><rect x="5" y="6" width="22" height="3" fill="#ff7a00"/><rect x="13" y="3" width="6" height="3" fill="#ffb000"/><path d="M7 10h18l-2 19H9z" fill="#160a02" stroke="#ff7a00" stroke-width="2"/><g fill="#ffb000"><rect x="11" y="13" width="2" height="13"/><rect x="15" y="13" width="2" height="13"/><rect x="19" y="13" width="2" height="13"/></g><rect x="22" y="1" width="8" height="5" fill="#c6ff00" opacity=".8"/></svg>
+        <span>Trash</span></a>
       <a class="icon" href="https://www.linkedin.com/in/callum-davenport-3a160013a/" target="_blank" rel="noopener">
         <svg viewBox="0 0 32 32" aria-hidden="true"><rect x="3" y="7" width="26" height="18" fill="#160a02" stroke="#ff7a00" stroke-width="2"/><rect x="7" y="11" width="7" height="7" fill="#ffb000"/><rect x="6" y="19" width="9" height="3" fill="#ffb000"/><g fill="#ff7a00"><rect x="17" y="12" width="9" height="2"/><rect x="17" y="16" width="7" height="2"/><rect x="17" y="20" width="8" height="2"/></g></svg>
         <span>LinkedIn ↗</span></a>
@@ -368,6 +398,22 @@ footer .big{font-family:var(--disp);font-size:clamp(18px,4vw,30px);color:var(--o
     </div>
   </section>
 
+  <!-- ================= OS FOLDERS (filled by terminal.js) ================= -->
+  <section id="viruses" class="os-win" hidden data-title="C:\VIRUSES — QUARANTINE" data-task="VIRUSES" data-w="560">
+    <div class="files" id="virusFiles"></div>
+    <div class="folder-note">double-click... or just click. they're all live. nothing here touches a real system.</div>
+  </section>
+  <section id="trash" class="os-win" hidden data-title="TRASH" data-task="TRASH" data-w="560">
+    <div class="files" id="trashFiles"></div>
+    <div class="folder-note">nobody ever looks in the trash. that's the point.</div>
+  </section>
+  <section id="gibson" class="os-win" hidden data-title="GIBSON — ELLINGSON MINERAL" data-task="GIBSON" data-w="620">
+    <div id="gibsonBody"></div>
+  </section>
+  <section id="garbage" class="os-win" hidden data-title="GARBAGE.DAT — HEX VIEW" data-task="GARBAGE" data-w="860">
+    <div class="hex" id="hexView"></div>
+  </section>
+
   <!-- ================= TERMINAL (see terminal.js) ================= -->
   <section id="terminal" class="os-win" hidden data-title="NYNEX TERMINAL — /dev/tty2600" data-task="TERMINAL" data-w="780">
     <div class="term" id="term">
@@ -381,7 +427,7 @@ footer .big{font-family:var(--disp);font-size:clamp(18px,4vw,30px);color:var(--o
 <div id="taskbar">
   <button id="startBtn" title="Open the terminal (~)">NYNEX</button>
   <div id="tasks"></div>
-  <div id="tray"><span class="hint">press ~ for terminal</span><span class="led" title="Gibson link">◆</span><span id="clock"></span></div>
+  <div id="tray"><span class="hint">press ~ for terminal</span><span id="money"></span><span class="led" title="Gibson link">◆</span><span id="clock"></span></div>
 </div>
 <div id="htp" aria-hidden="true"><b>HACK THE<br>PLANET</b><span>// NYNEX.DEV</span></div>
 
@@ -558,7 +604,8 @@ document.querySelectorAll(".reveal").forEach(s => io.observe(s));
   const n = (k, w) => k + " " + w + (k === 1 ? "" : "s");
   const STATUS = { services: n(2, "item"), events: n(EVENTS.length, "item"),
     projects: n(PROJECTS.length, "item"), resume: n(JOBS.length, "entry").replace("entrys", "entries"),
-    terminal: "tty2600 · 9600 baud" };
+    terminal: "tty2600 · 9600 baud", viruses: "4 objects · quarantined", trash: "3 objects", gibson: "ellingson mineral corp.",
+    garbage: "4,096,000 bytes" };
   let z = 30, cascade = 0;
 
   wins.forEach(sec => {
@@ -760,6 +807,7 @@ document.querySelectorAll(".reveal").forEach(s => io.observe(s));
   t(); setInterval(t, 15000);
 })();
 </script>
+<script src="fx.js"></script>
 <script src="terminal.js"></script>
 </body>
 </html>
