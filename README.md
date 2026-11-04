@@ -9,6 +9,7 @@ Everything editable lives in the `<script>` block near the bottom of `index.html
 
 The Hackers-style terminal (open it with the Terminal icon, the NYNEX taskbar button or the `~` key) lives in `terminal.js`.
 Its files are in the `FILES` object and its commands in the `C` object.
+What the viruses do to the page (tilting, bites, breeding windows, pong, the worm, the Gibson fly-through) lives in `fx.js`.
 
 ## Deploying
 Hosted on GitHub Pages from the `main` branch, root folder (Settings → Pages → Deploy from a branch → `main` / `/ (root)`).

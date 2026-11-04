@@ -81,10 +81,12 @@
         "",
         "Things worth trying:",
         `  ${cmd("help")}            the command list`,
-        `  ${cmd("ls viruses")}      a small collection of famous malware`,
+        `  ${cmd("ls viruses")}      famous malware. it really runs. on this page.`,
         `  ${cmd("hack gibson")}     the big one`,
         `  ${cmd("open resume")}     the boring-but-real part of the site`,
         "",
+        "",
+        "The desktop works too: Viruses, Trash and the Gibson are all clickable.",
         h("d", "rumor has it there's a worm hiding in the Gibson's garbage."),
       ],
       "handles.txt": () => [
@@ -182,83 +184,141 @@
   function locked(dir){ return dir === "/gibson" && !S.gibson; }
 
   /* ---------- garbage.dat ---------- */
-  const HEX = "0123456789abcdef";
+  // 64 rows of noise. the worm hides in one of them, in a different place every visit.
+  const HEX = "0123456789abcdef", ROWS = 64, WORM_ROW = 20 + Math.floor(Math.random() * 36);
   function noise(n, seed){ let s = seed, r = ""; for (let i = 0; i < n; i++) { s = (s * 1103515245 + 12345) & 0x7fffffff; r += HEX[(s >>> 16) % 16]; } return r; }
-  function garbageLines(reveal){
+  function garbageRow(i){
+    const off = (0x2600 + i * 16).toString(16).padStart(6, "0");
+    if (i === WORM_ROW) return { off, hex: "2e 2e 77 30 72 6d 2e 73 61 6c 61 6d 69 2e 2e 2e", asc: "..w0rm.salami...", worm: true };
+    return { off, hex: noise(32, 7 + i * 31).match(/../g).join(" "),
+      asc: noise(16, 99 + i * 17).replace(/[0-9a-f]/g, c => ".:;~^`',_-=+*%#"[parseInt(c, 16) % 15]) };
+  }
+  function garbageLines(reveal, from = WORM_ROW - 6, n = 12){
     const rows = [];
-    for (let i = 0; i < 14; i++) {
-      const off = (0x2600 + i * 16).toString(16).padStart(6, "0");
-      let hex = noise(32, 7 + i * 31).match(/../g).join(" ");
-      let asc = noise(16, 99 + i * 17).replace(/[0-9a-f]/g, c => ".:;~^`',_-=+*%#"[parseInt(c, 16) % 15]);
-      if (i === 9) {
-        asc = "..w0rm.salami...";
-        hex = "2e 2e 77 30 72 6d 2e 73 61 6c 61 6d 69 2e 2e 2e";
-        if (reveal) { rows.push(`${h("d", off)}  ${h("r", hex)}  ${h("inv", asc)}  ${h("r", "<-- FOUND IT")}`); continue; }
-      }
-      rows.push(`${h("d", off)}  ${h("o", hex)}  ${h("y", asc)}`);
+    for (let i = from; i < from + n; i++) {
+      const r = garbageRow(i);
+      if (r.worm && reveal) rows.push(`${h("d", r.off)}  ${h("r", r.hex)}  ${h("inv", r.asc)}  ${h("r", "<-- FOUND IT")}`);
+      else rows.push(`${h("d", r.off)}  ${h("o", r.hex)}  ${h("y", r.asc)}`);
     }
     return rows;
   }
+  // the hex viewer window: click the row the worm is hiding in
+  function renderGarbage(){
+    const v = $("#hexView"); if (!v) return;
+    let html = `<div class="d" style="color:var(--dim)">offset  00 01 02 03 04 05 06 07 08 09 0a 0b 0c 0d 0e 0f  ascii           · spot anything odd? click it.</div>`;
+    for (let i = 0; i < ROWS; i++) {
+      const r = garbageRow(i);
+      html += `<button data-row="${i}"${S.wormFound && r.worm ? ' class="found"' : ""}><span class="off">${r.off}</span>  ${r.hex}  <span class="asc">${esc(r.asc)}</span></button>`;
+    }
+    v.innerHTML = html;
+  }
+  document.addEventListener("click", e => {
+    const b = e.target.closest("#hexView button[data-row]"); if (!b) return;
+    if (+b.dataset.row === WORM_ROW) { b.classList.add("found"); findWorm(b.getBoundingClientRect()); }
+    else { b.classList.remove("miss"); void b.offsetWidth; b.classList.add("miss"); }
+  });
+  function openGarbage(){
+    if (!S.gibson) { openWin("gibson"); return false; }
+    renderGarbage(); openWin("garbage"); return true;
+  }
 
   /* ---------- worm ---------- */
-  function startWorm(){
-    if (S.procs.worm) return;
-    S.procs.worm = setInterval(() => {
-      S.skimmed += Math.floor(Math.random() * 900 + 300);
-      if (Math.random() < .25) print(`${h("r", "[WORM]")} skimmed ${h("y", "$" + (S.skimmed / 100).toFixed(2))} so far. ${h("d", "(kill worm)")}`, true);
-    }, 2500);
-  }
-
-  /* ---------- da Vinci ---------- */
-  const SHIP = [
-    "            |    |    |",
-    "           )_)  )_)  )_)",
-    "          )___))___))___)",
-    "    _____|____|____|____|_____",
-    "    \\   NYNEX TANKER  #2600   /",
-    "  ~~~\\_______________________/~~~~",
-  ];
-  function runDavinci(){
-    if (S.procs.davinci) return print(h("r", "davinci.exe is already running. you might want to kill it."), true);
-    let t = 30;
-    print(h("r", "DA VINCI VIRUS ENGAGED"), true);
-    print("Ballast control for the tanker fleet has been taken over.", false);
-    print(`The fleet capsizes in ${h("y", t + "s")} unless you ${cmd("kill davinci")}.`, true);
+  function findWorm(rect){
+    if (S.wormDead) { print(h("g", "the worm is already dead. you did that."), true); return; }
+    if (S.wormFound && FX.worm.on) return;
+    S.wormFound = true;
+    termOpen();
+    print(h("r", `SIGNATURE MATCH at 0x${(0x2600 + WORM_ROW * 16).toString(16).padStart(6, "0")}: w0rm.salami`), true);
+    print(h("y", "It's a worm.") + " It shaves a fraction of a cent off every transaction and stashes it in the garbage.", true);
+    print(h("r", "...and now that you've found it, it's making a run for it."), true);
+    print(`${h("y", "CLICK IT")} five times to squash it, or ${cmd("kill worm")}. watch the taskbar: it's skimming as it goes.`, true);
     shake();
-    S.procs.davinci = setInterval(() => {
-      t -= 5;
-      if (t > 0) { print(`${h("r", "[DA VINCI]")} ${6 - t / 5 | 0} of 6 tankers listing. T-minus ${h("y", t + "s")}`, true); return; }
-      clearInterval(S.procs.davinci); delete S.procs.davinci; shake();
+    FX.worm.start(rect, null, money => {
+      S.wormDead = true; S.skimmed = money;
+      print(h("g", "WORM TERMINATED.") + ` ${h("y", "$" + (money / 100).toFixed(2))} returned to the accounts it was skimmed from.`, true);
+      print(h("d", "the security officer is going to have a very bad day."), true);
+      renderGibson();
+    });
+  }
+
+  /* ---------- viruses: the effects live in fx.js ---------- */
+  function runDavinci(){
+    if (FX.davinci.on) return print(h("r", "davinci.exe is already running. you might want to kill it."), true);
+    print(h("r", "DA VINCI VIRUS ENGAGED"), true);
+    print("Ballast control for the tanker fleet has been taken over. This website is one of the tankers.", false);
+    print(`It capsizes in ${h("y", "30s")} unless you ${cmd("kill davinci")}.`, true);
+    shake();
+    FX.davinci.start(30, () => {
       print(h("r", "THE FLEET HAS CAPSIZED."), true);
-      SHIP.slice().reverse().forEach(l => print(h("o art", l.replace(/[\\/]/g, c => c === "/" ? "\\" : "/")), true));
-      print(h("d", "(simulated. no actual oil tankers were harmed. try again: run davinci)"), true);
-    }, reduce ? 1000 : 5000);
+      print(h("d", "(simulated. no actual oil tankers were harmed. try again, faster: run davinci)"), true);
+    });
   }
-
-  /* ---------- rabbit ---------- */
-  async function runRabbit(){
+  function runCookie(){
+    if (FX.cookie.on) return print(h("r", "it's already loose. it wants a cookie."), true);
+    S.cookie = true; S.cookieTries = 0; shake();
+    print(h("r", "COOKIE.EXE IS LOOSE"), true);
+    print(h("y", "it's eating the website. it has taken your prompt too."), true);
+    FX.cookie.start(() => { S.cookie = false; prompt(); print(h("y", "OM NOM NOM. cookie.exe is satisfied and wanders off. the site grows back."), true); });
+    prompt();
+  }
+  function runRabbit(){
+    if (FX.rabbit.on) return print(h("r", "the rabbits are already out."), true);
     print(h("r", "rabbit.exe: a program whose only job is to copy itself."), true);
-    let n = 1;
-    for (let gen = 0; gen < 8; gen++) {
-      print(`${h("d", "gen " + gen)} ${h("o", "(\\(\\ ".repeat(Math.min(n, 12)))}${n > 12 ? h("y", " x" + n) : ""}`, true);
-      n *= 2; await sleep(260);
-    }
-    print(h("y", "memory full. rabbit.exe ate itself. ") + h("d", "classic."), true);
+    print(`Close one and two more appear. ${cmd("kill rabbit")} if you've had enough.`, true);
+    FX.rabbit.start(full => print(full ? h("y", "memory full. rabbit.exe ate itself. classic.") : h("g", "rabbits terminated."), true));
+  }
+  function runPong(){
+    if (FX.pong.on) return print("pong is already running.");
+    print(h("y", "pong.exe: the whole screen is the court. your windows are in the way."), true);
+    print(h("d", "open a few windows first for more chaos. 30 second match."), true);
+    FX.pong.start(30, (_, rally, hits) => print(`${h("y", "GAME OVER.")} rally ${rally}, windows smacked ${hits}.`, true));
   }
 
-  /* ---------- pong ---------- */
-  async function runPong(){
-    const W = 30;
-    let x = 1, dx = 1, score = 0;
-    const d = print("", true);
-    for (let f = 0; f < 90; f++) {
-      x += dx; if (x <= 1 || x >= W - 2) { dx = -dx; score++; tone([440 + dx * 120], 40, .03); }
-      const row = " ".repeat(x) + "●" + " ".repeat(W - x - 1);
-      d.innerHTML = `${h("y", "▌")}${h("o", row)}${h("y", "▐")}  ${h("d", "rally " + score)}`;
-      await sleep(45);
-    }
-    print(h("d", "pong.exe is genuinely just pong. some viruses are friendly."), true);
+  /* ---------- desktop windows ---------- */
+  const openWin = id => window.NYNEX && NYNEX.open(id);
+  function termOpen(){ const t = $("#terminal"); if (t && t.hidden) openWin("terminal"); }
+  const ICON = {
+    exe: `<svg viewBox="0 0 32 32"><rect x="4" y="5" width="24" height="22" fill="#160a02" stroke="#ff3b1f" stroke-width="2"/><rect x="4" y="5" width="24" height="4" fill="#ff3b1f"/><path d="M16 12l6 11H10z" fill="#ffe14a"/><rect x="15" y="15" width="2" height="4" fill="#000"/><rect x="15" y="20" width="2" height="2" fill="#000"/></svg>`,
+    txt: `<svg viewBox="0 0 32 32"><path d="M7 3h13l5 5v21H7z" fill="#160a02" stroke="#ff7a00" stroke-width="2"/><g fill="#ffb000"><rect x="10" y="12" width="12" height="2"/><rect x="10" y="16" width="12" height="2"/><rect x="10" y="20" width="8" height="2"/></g></svg>`,
+    dat: `<svg viewBox="0 0 32 32"><path d="M7 3h13l5 5v21H7z" fill="#160a02" stroke="#c6ff00" stroke-width="2"/><g fill="#c6ff00"><rect x="10" y="11" width="3" height="3"/><rect x="15" y="11" width="3" height="3" opacity=".5"/><rect x="20" y="11" width="2" height="3"/><rect x="10" y="16" width="2" height="3" opacity=".5"/><rect x="14" y="16" width="3" height="3"/><rect x="19" y="16" width="3" height="3" opacity=".5"/><rect x="11" y="21" width="3" height="3"/><rect x="17" y="21" width="3" height="3"/></g></svg>`,
+    junk: `<svg viewBox="0 0 32 32"><path d="M7 3h13l5 5v21H7z" fill="#160a02" stroke="#a07a55" stroke-width="2" stroke-dasharray="3 2"/><g fill="#a07a55"><rect x="10" y="12" width="12" height="2"/><rect x="10" y="17" width="9" height="2"/></g></svg>`,
+    lock: `<svg viewBox="0 0 32 32"><rect x="7" y="14" width="18" height="14" fill="#160a02" stroke="#ff3b1f" stroke-width="2"/><path d="M11 14v-4a5 5 0 0 1 10 0v4" fill="none" stroke="#ff3b1f" stroke-width="3"/><rect x="15" y="19" width="2" height="5" fill="#ffe14a"/></svg>`,
+  };
+  const fileBtn = (icon, name, run, note = "") => `<button class="file" data-run="${esc(run)}">${ICON[icon]}<span>${esc(name)}</span>${note ? `<small>${esc(note)}</small>` : ""}</button>`;
+  function renderFolders(){
+    const v = $("#virusFiles");
+    if (v) v.innerHTML = fileBtn("exe", "davinci.exe", "run davinci", "capsizes things") + fileBtn("exe", "cookie.exe", "run cookie", "hungry")
+      + fileBtn("exe", "rabbit.exe", "run rabbit", "breeds") + fileBtn("exe", "pong.exe", "run pong", "bouncy") + fileBtn("txt", "README", "cat viruses/README");
+    const t = $("#trashFiles");
+    if (t) t.innerHTML = fileBtn("dat", "garbage.dat", "#garbage", S.gibson ? "4 MB" : "on the gibson") + fileBtn("junk", "resume_FINAL_v2_REAL.doc", "#junk1")
+      + fileBtn("junk", "aol_trial_disk.img", "#junk2") + fileBtn("junk", "passwords.txt", "#junk3");
   }
+  function renderGibson(){
+    const g = $("#gibsonBody"); if (!g) return;
+    if (!S.gibson) {
+      g.innerHTML = `<div class="locked">ELLINGSON MINERAL CORPORATION<b>LOCKED</b>supercomputer · authorized users only<br><span style="color:var(--dim)">the garbage file lives in here.</span><br><button class="btn" data-run="hack gibson">HACK IN</button></div>`;
+      return;
+    }
+    g.innerHTML = `<div class="files">${fileBtn("dat", "garbage.dat", "#garbage", S.wormDead ? "clean" : "4 MB · look closer")}${fileBtn("txt", "ellingson.log", "cat gibson/ellingson.log")}${fileBtn("txt", "ballast.cfg", "cat gibson/ballast.cfg")}${fileBtn("exe", "davinci.exe", "run davinci", "who put this here?")}</div>
+      <div class="folder-note">${S.wormDead ? "the worm is dead. the garbage is just garbage again." : "you're in. the worm is hiding in garbage.dat. open it and find the row that doesn't belong."}</div>`;
+  }
+  const JUNK = {
+    "#junk1": () => [h("y", "resume_FINAL_v2_REAL.doc"), "an older draft. the real one is in the Resume window.", cmd("open resume")],
+    "#junk2": () => [h("y", "aol_trial_disk.img"), "1,000 free hours. expired in 1996."],
+    "#junk3": () => [h("y", "passwords.txt"), "god", "love", "secret", "...the fourth one is smudged.", h("d", "(this is why you don't keep these in the trash.)")],
+  };
+  // clicks on any [data-run] (folder files, the HACK IN button)
+  document.addEventListener("click", e => {
+    const b = e.target.closest("[data-run]"); if (!b) return;
+    e.preventDefault();
+    const r = b.dataset.run;
+    if (r === "#garbage") {
+      if (!openGarbage()) { termOpen(); print(h("r", "garbage.dat lives on the Gibson. hack in first: ") + cmd("hack gibson"), true); }
+      return;
+    }
+    if (JUNK[r]) { termOpen(); JUNK[r]().forEach(l => print(l, true)); return; }
+    window.TERM.run(r);
+  });
 
   /* ---------- the Gibson ---------- */
   const GIBSON = [
@@ -317,10 +377,12 @@
     await sleep(200);
     await bar("mapping the core ......", 900);
     await bar("disabling the trace ....", 700);
+    await FX.dive();
     S.gibson = true; S.cwd = "/gibson";
+    renderGibson(); renderFolders(); openWin("gibson");
     print("");
     print(h("y", "You're in the Gibson.") + " Nobody really looks at the " + h("o", "garbage") + " file, do they?", true);
-    print(`try ${cmd("ls")}, then ${cmd("cat garbage.dat")}`, true);
+    print(`open ${cmd("cat garbage.dat")} and find the row that doesn't belong.`, true);
     print(h("d", "( one more thing: say it with me. type: hack the planet )"), true);
   }
 
@@ -396,10 +458,10 @@
       if (f.v === "dir") { print(`cat: ${a[0]}: is a directory`); return; }
       if (f.v === "exe") { print(`cat: binary file. maybe ${cmd("run " + f.name.replace(".exe", ""))} it instead?`, true); return; }
       if (f.v === "garbage") {
-        print(h("d", "garbage.dat  // 4,096,000 bytes of nothing important"), true);
-        garbageLines(S.wormFound).forEach(l => print(l, true));
-        print(h("d", "... (truncated)"), true);
-        if (!S.wormFound) print(h("d", "looks like noise. or does it? try ") + cmd("scan garbage.dat"), true);
+        print(h("d", `garbage.dat  // 4,096,000 bytes of nothing important. ${ROWS} rows shown in the hex viewer.`), true);
+        garbageLines(S.wormFound, 0, 6).forEach(l => print(l, true));
+        print(h("d", "... opening the hex viewer. find the row that doesn't belong, or ") + cmd("scan garbage.dat"), true);
+        openGarbage();
         return;
       }
       f.v().forEach(l => print(l, true));
@@ -417,57 +479,49 @@
       if (!S.gibson) { print(h("r", "scan: garbage.dat is on the Gibson. ") + cmd("hack gibson"), true); return; }
       await bar("scanning garbage.dat ...", 1600);
       if (S.wormDead) { print(h("g", "clean. the worm is gone. you did that."), true); return; }
-      S.wormFound = true;
-      shake();
-      print(h("r", "SIGNATURE MATCH at 0x002690: w0rm.salami"), true);
       garbageLines(true).forEach(l => print(l, true));
-      print("");
-      print(h("y", "It's a worm.") + " It shaves a fraction of a cent off every transaction and hides the money in the garbage.", true);
-      print(`It's running right now. ${cmd("kill worm")} before it gets away.`, true);
-      startWorm();
+      renderGarbage(); openGarbage();
+      await sleep(500);
+      const row = document.querySelector(`#hexView button[data-row="${WORM_ROW}"]`);
+      if (row) { row.scrollIntoView({ block: "center" }); row.classList.add("found"); }
+      findWorm(row && !$("#garbage").hidden ? row.getBoundingClientRect() : null);
     },
     grep(a){ if (a.some(x => /worm/i.test(x))) return C.scan([a.find(x => !/worm/i.test(x)) || "garbage.dat"]); print("grep: nothing found. try scanning a file instead."); },
     find(a){ if (a.some(x => /worm/i.test(x))) return C.scan(["garbage.dat"]); print(h("d", "find: try ") + cmd("scan garbage.dat"), true); },
     ps(){
       print(h("y", "  PID  NAME"), true);
       print("    1  init"); print("   42  ticker.d"); print("  386  datacity.exe");
-      if (S.procs.worm) print(`  ${h("r", "666  w0rm.salami")}`, true);
-      if (S.procs.davinci) print(`  ${h("r", "1995  davinci.exe")}`, true);
-      if (S.cookie) print(`  ${h("r", "  7  cookie.exe")}`, true);
+      if (FX.worm.on) print(`  ${h("r", "666  w0rm.salami")}`, true);
+      if (FX.davinci.on) print(`  ${h("r", "1995  davinci.exe")}`, true);
+      if (FX.cookie.on) print(`  ${h("r", "   7  cookie.exe")}`, true);
+      if (FX.rabbit.on) print(`  ${h("r", "  23  rabbit.exe")} ${h("d", "(and its children)")}`, true);
+      if (FX.pong.on) print(`  ${h("r", "1972  pong.exe")}`, true);
     },
     kill(a){
       const n = (a.find(x => !x.startsWith("-")) || "").toLowerCase().replace(".exe", "");
       if (/worm|salami|666/.test(n)) {
-        if (!S.procs.worm) { print(S.wormDead ? "worm: already dead." : "kill: no worm running. have you looked in the garbage?"); return; }
-        clearInterval(S.procs.worm); delete S.procs.worm; S.wormDead = true;
-        print(h("g", "WORM TERMINATED."), true);
-        print(`${h("y", "$" + (S.skimmed / 100).toFixed(2))} returned to the accounts it was skimmed from.`, true);
-        print(h("d", "the security officer is going to have a very bad day."), true);
-        return;
+        if (!FX.worm.on) { print(S.wormDead ? "worm: already dead." : "kill: no worm running. have you looked in the garbage?"); return; }
+        FX.worm.kill(); return;
       }
       if (/davinci|da|vinci|1995/.test(n)) {
-        if (!S.procs.davinci) { print("kill: davinci isn't running."); return; }
-        clearInterval(S.procs.davinci); delete S.procs.davinci;
+        if (!FX.davinci.stop()) { print("kill: davinci isn't running."); return; }
         print(h("g", "DA VINCI NEUTRALIZED. ballast control restored. the fleet is level."), true);
         return;
       }
+      if (/rabbit|wabbit|23/.test(n)) { if (!FX.rabbit.collapse(false)) print("kill: no rabbits running."); return; }
+      if (/pong|1972/.test(n)) { if (!FX.pong.stop(false)) print("kill: pong isn't running."); return; }
       if (/cookie/.test(n)) { print(h("r", "kill: cookie.exe refuses to die. it wants something."), true); return; }
       if (/^(1|init)$/.test(n)) { print(h("r", "nice try. init is immortal."), true); return; }
+      if (n === "all" || n === "-9") { ["worm", "davinci", "rabbit", "pong"].forEach(x => C.kill([x])); return; }
       print(`kill: ${n || "?"}: no such process. see ${cmd("ps")}`, true);
     },
     async run(a){
       const n = (a[0] || "").toLowerCase().replace(/\.exe$/, "").replace(/^\.\//, "").replace(/^viruses\//, "").replace("-", "");
       if (!n) { print(`run what? ${cmd("cat viruses/README")}`, true); return; }
       if (n === "davinci" || n === "da" && (a[1] || "").toLowerCase() === "vinci") return runDavinci();
-      if (n === "cookie" || n === "cookiemonster") {
-        S.cookie = true; S.cookieTries = 0; shake();
-        print(h("r", "COOKIE.EXE IS LOOSE"), true);
-        print(h("y", "I WANT COOKIE. GIVE ME COOKIE."), true);
-        print(h("d", "(it's taken over your prompt. it won't stop until you give it what it wants.)"), true);
-        return;
-      }
-      if (n === "rabbit" || n === "wabbit") { setBusy(true); return runRabbit(); }
-      if (n === "pong") { setBusy(true); return runPong(); }
+      if (n === "cookie" || n === "cookiemonster") return runCookie();
+      if (n === "rabbit" || n === "wabbit") return runRabbit();
+      if (n === "pong") return runPong();
       if (n === "worm") { print(h("d", "you can't run the worm. somebody already is. it's in the Gibson's garbage."), true); return; }
       print(`run: ${n}: not found in ~/viruses`);
     },
@@ -557,9 +611,8 @@
 
     // cookie monster owns the prompt until fed
     if (S.cookie) {
-      if (/^(give\s+)?(a\s+|the\s+)?cookies?$|^feed\s+cookie/.test(low)) {
-        S.cookie = false;
-        print(h("y", "OM NOM NOM. COOKIE.EXE IS SATISFIED AND WANDERS OFF."), true);
+      if (/cookie/.test(low) && !/^run|^kill/.test(low)) {
+        FX.cookie.feed();
       } else {
         S.cookieTries++;
         print(h("r", ["COOKIE!", "I WANT COOKIE!", "GIVE ME COOKIE!", "NO COOKIE, NO COMPUTER."][S.cookieTries % 4]), true);
@@ -605,7 +658,7 @@
     }
     const last = parts[parts.length - 1];
     let pool = Object.keys(FILES[S.cwd] || {}).filter(n => !n.startsWith("."));
-    if (parts[0] === "run" || parts[0] === "kill") pool = parts[0] === "run" ? ["davinci", "cookie", "rabbit", "pong"] : ["worm", "davinci"];
+    if (parts[0] === "run" || parts[0] === "kill") pool = parts[0] === "run" ? ["davinci", "cookie", "rabbit", "pong"] : ["worm", "davinci", "rabbit", "pong", "all"];
     if (parts[0] === "open") pool = ["services", "events", "projects", "resume"];
     if (parts[0] === "login") pool = Object.keys(HANDLES).filter(x => x !== "plague");
     if (parts[0] === "hack") pool = ["gibson", "the planet"];
@@ -674,5 +727,15 @@
     if (k === K.length) { k = 0; hackThePlanet(); }
   });
 
+  // other parts of the page (folder icons, buttons) run commands through here
+  window.TERM = {
+    run(c){
+      termOpen();
+      if (busy || asking) { print(h("d", `(busy. try "${c}" in a moment.)`), true); return; }
+      greet(); inp.value = c; submit();
+    }
+  };
+
+  renderFolders(); renderGibson();
   prompt();
 })();
