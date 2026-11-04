@@ -761,6 +761,9 @@
   ["pointermove", "pointerdown", "keydown", "wheel", "touchstart", "scroll"].forEach(t => addEventListener(t, idle, { passive: true }));
   idle();
 
+  // the numbers screensaver borrows rows straight out of garbage.dat
+  FX.numbers.rows = () => Array.from({ length: ROWS }, (_, i) => garbageRow(i));
+
   renderFolders(); renderGibson(); renderGarbage();
   prompt();
 })();
