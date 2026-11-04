@@ -29,7 +29,7 @@
 
   .fxwin{position:fixed;z-index:113;background:#0d0602;border:2px solid #000;padding:3px;font-family:var(--crt);color:var(--amber);
     box-shadow:inset 2px 2px 0 var(--amber),inset -2px -2px 0 #6b2a00,0 0 0 1px var(--orange),6px 6px 0 rgba(0,0,0,.65)}
-  .fxwin .t{display:flex;align-items:center;gap:6px;height:20px;padding:0 4px;background:repeating-linear-gradient(to bottom,var(--red) 0 2px,#1a0a02 2px 4px);
+  .fxwin .t{display:flex;align-items:center;gap:6px;height:20px;padding:0 4px;cursor:grab;touch-action:none;user-select:none;background:repeating-linear-gradient(to bottom,var(--red) 0 2px,#1a0a02 2px 4px);
     font-size:17px;line-height:18px}
   .fxwin .t span{margin:0 auto;background:#0d0602;padding:0 8px;color:var(--yellow)}
   .fxwin .t button{width:14px;height:14px;padding:0;background:#0d0602;border:2px solid var(--amber);cursor:pointer}
@@ -75,6 +75,20 @@
   html.fx-tilt{overflow:hidden}
   html.fx-tilt body{overflow:hidden}
   `));
+
+  /* ---------- virus pop-ups can be dragged by their title bars ---------- */
+  document.addEventListener("pointerdown", e => {
+    const bar = e.target.closest(".fxwin .t"); if (!bar || e.target.closest("button") || e.button !== 0) return;
+    const w = bar.parentElement, r = w.getBoundingClientRect(), dx = e.clientX - r.left, dy = e.clientY - r.top;
+    e.preventDefault();
+    Object.assign(w.style, { left: r.left + "px", top: r.top + "px", transform: "none" });
+    w.style.zIndex = 113 + (++dragZ);
+    bar.setPointerCapture(e.pointerId);
+    const move = ev => { w.style.left = Math.max(60 - r.width, Math.min(innerWidth - 60, ev.clientX - dx)) + "px"; w.style.top = Math.max(0, Math.min(innerHeight - 24, ev.clientY - dy)) + "px"; };
+    const up = () => { bar.removeEventListener("pointermove", move); bar.removeEventListener("pointerup", up); bar.removeEventListener("pointercancel", up); };
+    bar.addEventListener("pointermove", move); bar.addEventListener("pointerup", up); bar.addEventListener("pointercancel", up);
+  });
+  let dragZ = 0;
 
   /* ---------- shared HUD ---------- */
   function hud(html, cls = ""){ const h = add(el("div", "fxhud " + cls, html)); return h; }
@@ -274,7 +288,7 @@
         if (x + 16 < r.left || x > r.right || y + 16 < r.top || y > r.bottom) return;
         const ox = Math.min(x + 16 - r.left, r.right - x), oy = Math.min(y + 16 - r.top, r.bottom - y);
         if (ox < oy) { vx = -vx; x += vx > 0 ? ox : -ox; } else { vy = -vy; y += vy > 0 ? oy : -oy; }
-        if (!w.classList.contains("max") && innerWidth > 760) {
+        if (!w.classList.contains("max") && innerWidth > 560) {
           w.style.left = (parseFloat(w.style.left) || r.left) - vx * 3 + "px";
           w.style.top = Math.max(0, (parseFloat(w.style.top) || r.top) - vy * 3) + "px";
         }

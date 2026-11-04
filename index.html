@@ -173,7 +173,23 @@ section{padding:80px 0 0;scroll-margin-top:70px}
 .os-win.shaded{height:auto!important;min-height:0}
 .os-win.shaded > :not(.os-title){display:none}
 .zrect{position:fixed;z-index:99;border:2px solid var(--yellow);pointer-events:none;opacity:0;box-shadow:0 0 10px var(--orange)}
-@media (max-width:760px){
+/* resize handles on every edge and corner */
+.rz{position:absolute;z-index:2;touch-action:none}
+.rz[data-d=n],.rz[data-d=s]{left:10px;right:10px;height:8px;cursor:ns-resize}
+.rz[data-d=e],.rz[data-d=w]{top:10px;bottom:10px;width:8px;cursor:ew-resize}
+.rz[data-d=n]{top:-4px} .rz[data-d=s]{bottom:-4px} .rz[data-d=e]{right:-4px} .rz[data-d=w]{left:-4px}
+.rz[data-d=nw],.rz[data-d=ne],.rz[data-d=sw],.rz[data-d=se]{width:14px;height:14px}
+.rz[data-d=nw]{left:-4px;top:-4px;cursor:nwse-resize} .rz[data-d=se]{right:-4px;bottom:-4px;cursor:nwse-resize}
+.rz[data-d=ne]{right:-4px;top:-4px;cursor:nesw-resize} .rz[data-d=sw]{left:-4px;bottom:-4px;cursor:nesw-resize}
+/* a visible grip in the corner, 90s style */
+.os-grip{position:absolute;right:3px;bottom:3px;width:14px;height:14px;pointer-events:none;
+  background:linear-gradient(135deg,transparent 0 45%,var(--amber) 45% 52%,transparent 52% 62%,var(--amber) 62% 69%,transparent 69% 79%,var(--amber) 79% 86%,transparent 86%)}
+.os-win.max .rz,.os-win.max .os-grip,.os-win.shaded .rz,.os-win.shaded .os-grip{display:none}
+.os-win.resizing,.os-win.resizing *{user-select:none}
+@media (max-width:560px){
+  .rz,.os-grip{display:none}
+}
+@media (max-width:560px){
   .os-win,.os-win.max{left:6px!important;top:6px!important;width:calc(100vw - 12px)!important;height:calc(100dvh - 12px)!important}
   .os-title{cursor:default}
   .os-body{padding:14px}
@@ -600,7 +616,7 @@ document.querySelectorAll(".reveal").forEach(s => io.observe(s));
 /* ---------- Window manager ---------- */
 (function wm(){
   const wins = [...document.querySelectorAll("section.os-win")];
-  const mobile = () => innerWidth <= 760;
+  const mobile = () => innerWidth <= 560;
   const n = (k, w) => k + " " + w + (k === 1 ? "" : "s");
   const STATUS = { services: n(2, "item"), events: n(EVENTS.length, "item"),
     projects: n(PROJECTS.length, "item"), resume: n(JOBS.length, "entry").replace("entrys", "entries"),
@@ -626,7 +642,7 @@ document.querySelectorAll(".reveal").forEach(s => io.observe(s));
     sec.querySelector(".os-close").addEventListener("click", () => close(sec));
     sec.querySelector(".os-zoom").addEventListener("click", () => { sec.classList.remove("shaded"); sec.classList.toggle("max"); });
     sec.addEventListener("pointerdown", () => focusWin(sec));
-    makeDraggable(sec);
+    makeDraggable(sec); makeResizable(sec);
   });
 
   function focusWin(sec){
@@ -710,6 +726,33 @@ document.querySelectorAll(".reveal").forEach(s => io.observe(s));
     });
     // double-click the title bar to roll the window up (classic "window shade")
     bar.addEventListener("dblclick", e => { if (!e.target.closest(".os-btn") && !mobile()) sec.classList.toggle("shaded"); });
+  }
+
+  // drag any edge or corner to resize
+  function makeResizable(sec){
+    ["n", "s", "e", "w", "nw", "ne", "sw", "se"].forEach(d => {
+      const h = document.createElement("div"); h.className = "rz"; h.dataset.d = d; sec.appendChild(h);
+      h.addEventListener("pointerdown", e => {
+        if (e.button !== 0 || mobile() || sec.classList.contains("max")) return;
+        e.preventDefault(); e.stopPropagation(); focusWin(sec);
+        const r = sec.getBoundingClientRect(), sx = e.clientX, sy = e.clientY;
+        const minW = 300, minH = 160;
+        h.setPointerCapture(e.pointerId); sec.classList.add("resizing");
+        const move = ev => {
+          const dx = ev.clientX - sx, dy = ev.clientY - sy;
+          let { left, top, width, height } = r;
+          if (d.includes("e")) width = Math.min(innerWidth - left - 4, Math.max(minW, r.width + dx));
+          if (d.includes("s")) height = Math.min(innerHeight - top - 4, Math.max(minH, r.height + dy));
+          if (d.includes("w")) { width = Math.max(minW, r.width - dx); left = Math.max(0, r.right - width); width = r.right - left; }
+          if (d.includes("n")) { height = Math.max(minH, r.height - dy); top = Math.max(0, r.bottom - height); height = r.bottom - top; }
+          Object.assign(sec.style, { left: left + "px", top: top + "px", width: width + "px", height: height + "px" });
+        };
+        const up = () => { h.removeEventListener("pointermove", move); h.removeEventListener("pointerup", up);
+          h.removeEventListener("pointercancel", up); sec.classList.remove("resizing"); };
+        h.addEventListener("pointermove", move); h.addEventListener("pointerup", up); h.addEventListener("pointercancel", up);
+      });
+    });
+    const g = document.createElement("div"); g.className = "os-grip"; sec.appendChild(g);
   }
 
   // every internal link to a window opens it instead of scrolling
