@@ -68,6 +68,10 @@
   .dive .hud{position:absolute;left:20px;top:16px;font-family:var(--crt);font-size:22px;color:var(--amber);text-shadow:0 0 8px var(--orange);white-space:pre;line-height:1.15}
   .dive .hud2{position:absolute;right:20px;bottom:16px;font-family:var(--crt);font-size:22px;color:var(--orange);text-align:right;white-space:pre}
   .dive .flash{position:absolute;inset:0;background:var(--yellow);opacity:0;transition:opacity .35s}
+  .numbers{position:fixed;inset:0;z-index:118;pointer-events:none}
+  .numbers canvas{width:100%;height:100%;display:block}
+  .numbers-msg{position:absolute;left:0;right:0;bottom:22px;text-align:center;font-family:var(--crt);font-size:20px;color:var(--dim);letter-spacing:.2em;opacity:0;transition:opacity 2s}
+  .numbers-msg.show{opacity:.6}
   html.fx-tilt{overflow:hidden}
   html.fx-tilt body{overflow:hidden}
   `));
@@ -419,5 +423,151 @@
     });
   }
 
-  window.FX = { davinci: DV, cookie: CK, rabbit: RB, pong: PG, worm: WM, dive };
+  /* =========================================================
+     INTO THE NUMBERS — a screensaver of floating math.
+     The page dissolves while equations drift up out of the data.
+     Any input snaps everything back.
+     ========================================================= */
+  const NB = { on: false };
+  const MATH = [
+    "∫₀^∞ e^(-x²) dx = √π / 2", "Σ 1/n² = π²/6", "e^(iπ) + 1 = 0", "∇ × E = −∂B/∂t", "∂²u/∂t² = c²∇²u",
+    "φ = (1 + √5) / 2", "lim(x→0) sin x / x = 1", "det(A − λI) = 0", "f(x) = ax² + bx + c", "x = (−b ± √(b²−4ac)) / 2a",
+    "a² + b² = c²", "E = mc²", "λ = h / p", "ΔxΔp ≥ ħ/2", "F = G·m₁m₂ / r²", "∮ B·dl = μ₀I", "dy/dx = ky",
+    "ζ(s) = Σ n^(−s)", "P(A|B) = P(B|A)P(A) / P(B)", "sin²θ + cos²θ = 1", "∀ε>0 ∃δ>0", "0x2600", "0xDEADBEEF",
+    "10110011 01101001", "Ω = 2π / T", "∞", "π", "∑", "∫", "√2", "∂", "θ", "Δ", "x³ − 3x + 1", "n! ≈ √(2πn)(n/e)ⁿ",
+    "i² = −1", "log₂ 4096000", "ƒ(t) = Σ aₙ cos(nωt)", "|ψ⟩ = α|0⟩ + β|1⟩", "SALAMI = Σ 0.01", "1.618033988",
+    "3.14159265358979", "2.71828182845", "GIBSON", "[ 1 0 0 ]\n[ 0 1 0 ]\n[ 0 0 1 ]", "[ cos θ  −sin θ ]\n[ sin θ   cos θ ]",
+  ];
+  const COLORS = ["#ffb000", "#ff7a00", "#ffe14a", "#ff3b1f", "#ffe9cf", "#c6ff00"];
+  // layers of the page that fade away (fixed overlays are left alone)
+  // (never main itself: a filter there would re-anchor the fixed windows inside it)
+  const layers = () => [...document.querySelectorAll("header, main > .hero, footer, #taskbar, #city")];
+
+  NB.start = function(ox, oy){
+    if (NB.on) return false;
+    NB.on = true;
+    ox = ox ?? innerWidth / 2; oy = oy ?? innerHeight / 2;
+    const d = add(el("div", "numbers"));
+    const c = add(el("canvas")); d.appendChild(c);
+    const msg = el("div", "numbers-msg", "move the mouse or press any key to come back"); d.appendChild(msg);
+    NB.el = d;
+    const x = c.getContext("2d"), dpr = Math.min(devicePixelRatio || 1, 2);
+    let W, H, f;
+    const size = () => { W = innerWidth; H = innerHeight; c.width = W * dpr; c.height = H * dpr; x.setTransform(dpr, 0, 0, dpr, 0, 0); f = Math.min(W, H) * .9; };
+    size(); addEventListener("resize", size);
+
+    // the page slowly melts away: blur, fade, drift back
+    const L = layers();
+    L.forEach(e => { e.style.transition = "filter 9s ease-in, opacity 9s ease-in, transform 9s ease-in"; e.style.transformOrigin = `${ox}px ${oy}px`; });
+    requestAnimationFrame(() => L.forEach(e => { e.style.filter = "blur(6px) sepia(1) saturate(3) hue-rotate(-15deg)"; e.style.opacity = "0"; e.style.transform = "scale(.86)"; }));
+    document.querySelectorAll(".os-win:not([hidden])").forEach(w => { w.style.transition = "opacity 6s ease-in, filter 6s"; w.style.opacity = "0"; w.style.filter = "blur(4px)"; });
+
+    // things floating in 3D space. they start packed at the click point and spread out.
+    const items = [];
+    const spawn = (z, burst) => {
+      const r = Math.random();
+      const kind = r < .74 ? "text" : r < .88 ? "cube" : "wave";
+      items.push({ kind, txt: MATH[Math.random() * MATH.length | 0], col: COLORS[Math.random() * COLORS.length | 0],
+        x: burst ? (ox - innerWidth / 2) * z / f + rnd(-40, 40) : rnd(-1400, 1400), y: burst ? (oy - innerHeight / 2) * z / f + rnd(-40, 40) : rnd(-900, 900), z,
+        vx: burst ? rnd(-4, 4) : rnd(-1, 1), vy: burst ? rnd(-3, 3) : rnd(-.8, .8), vz: burst ? rnd(-2.5, -.8) : rnd(-3.2, -1.2),
+        rot: rnd(0, 6.28), vr: rnd(-.012, .012), yaw: rnd(0, 6.28), vyaw: rnd(-.015, .015), size: rnd(34, 78), born: performance.now() });
+    };
+    for (let i = 0; i < 36; i++) spawn(rnd(500, 1300), true);
+    const t0 = performance.now();
+    let last = t0;
+
+    function cube(it, sx, sy, sc, alpha){
+      const s = it.size * 1.6 * sc, a = it.rot, b = it.yaw;
+      const P = [-1, 1].flatMap(i => [-1, 1].flatMap(j => [-1, 1].map(k => {
+        let X = i, Y = j, Z = k;
+        [X, Z] = [X * Math.cos(b) - Z * Math.sin(b), X * Math.sin(b) + Z * Math.cos(b)];
+        [Y, Z] = [Y * Math.cos(a) - Z * Math.sin(a), Y * Math.sin(a) + Z * Math.cos(a)];
+        return [sx + X * s / (1 + Z * .15), sy + Y * s / (1 + Z * .15)];
+      })));
+      x.strokeStyle = it.col; x.globalAlpha = alpha; x.lineWidth = Math.max(1, sc * 2);
+      x.beginPath();
+      [[0,1],[2,3],[4,5],[6,7],[0,2],[1,3],[4,6],[5,7],[0,4],[1,5],[2,6],[3,7]].forEach(([p, q]) => { x.moveTo(P[p][0], P[p][1]); x.lineTo(P[q][0], P[q][1]); });
+      x.stroke();
+    }
+    function wave(it, sx, sy, sc, alpha, now){
+      x.strokeStyle = it.col; x.globalAlpha = alpha * .8; x.lineWidth = Math.max(1, sc * 1.5);
+      x.beginPath();
+      const w = 260 * sc;
+      for (let i = 0; i <= 40; i++) {
+        const u = i / 40, px = sx - w / 2 + u * w, py = sy + Math.sin(u * 12 + now / 400 + it.rot) * 30 * sc * Math.cos(it.yaw);
+        i ? x.lineTo(px, py) : x.moveTo(px, py);
+      }
+      x.stroke();
+    }
+
+    const step = now => {
+      if (!NB.on) return;
+      const dt = Math.min(3, (now - last) / 16.7); last = now;
+      const age = (now - t0) / 1000;
+      // background deepens from see-through to solid as the numbers take over
+      const bg = Math.min(1, age / 9);
+      x.globalAlpha = 1;
+      x.clearRect(0, 0, W, H);
+      x.fillStyle = `rgba(4,1,0,${bg * .97})`; x.fillRect(0, 0, W, H);
+      if (items.length < 40 + Math.min(70, age * 7)) spawn(rnd(1400, 2400), false);
+      // camera drifts slowly so the whole field breathes
+      const camX = Math.sin(age * .13) * 160, camY = (Math.cos(age * .1) - 1) * 90;
+      items.sort((a, b) => b.z - a.z);
+      for (let i = items.length - 1; i >= 0; i--) {
+        const it = items[i];
+        it.x += it.vx * dt; it.y += it.vy * dt; it.z += it.vz * dt; it.rot += it.vr * dt; it.yaw += it.vyaw * dt;
+        it.vx *= .995; it.vy *= .995;
+        if (it.z < 40) { items.splice(i, 1); continue; }
+      }
+      for (const it of items) {
+        const sc = f / it.z / 1.6, sx = W / 2 + (it.x - camX) * f / it.z, sy = H / 2 + (it.y - camY) * f / it.z;
+        if (sx < -400 || sx > W + 400 || sy < -300 || sy > H + 300) continue;
+        const near = Math.min(1, (2600 - it.z) / 900), fadeIn = Math.min(1, (now - it.born) / 800);
+        const alpha = Math.max(0, Math.min(1, near * fadeIn * (it.z < 160 ? (it.z - 40) / 120 : 1)));
+        if (alpha <= .02) continue;
+        if (it.kind === "cube") { cube(it, sx, sy, sc, alpha); continue; }
+        if (it.kind === "wave") { wave(it, sx, sy, sc, alpha, now); continue; }
+        x.save(); x.translate(sx, sy); x.rotate(Math.sin(it.rot) * .25); x.scale(Math.max(.15, Math.abs(Math.cos(it.yaw))), 1);
+        x.globalAlpha = alpha; x.fillStyle = it.col; x.textAlign = "center"; x.textBaseline = "middle";
+        x.font = `${Math.max(6, it.size * sc)}px VT323, "IBM Plex Mono", monospace`;
+        if (it.z < 500) { x.shadowColor = it.col; x.shadowBlur = 12; }
+        it.txt.split("\n").forEach((ln, k, all) => x.fillText(ln, 0, (k - (all.length - 1) / 2) * it.size * sc * 1.05));
+        x.restore();
+      }
+      x.globalAlpha = 1;
+      requestAnimationFrame(step);
+    };
+    requestAnimationFrame(step);
+    setTimeout(() => msg.classList.add("show"), 4000);
+
+    // any input wakes the page. a short grace period ignores the click that started it.
+    const armAt = performance.now() + 700;
+    let mx = null, my = null;
+    NB.wake = e => {
+      if (performance.now() < armAt) return;
+      if (e.type === "pointermove" || e.type === "mousemove") {
+        if (mx === null) { mx = e.clientX; my = e.clientY; return; }
+        if (Math.hypot(e.clientX - mx, e.clientY - my) < 8) return;
+      }
+      NB.stop();
+    };
+    ["pointermove", "pointerdown", "keydown", "wheel", "touchstart"].forEach(t => addEventListener(t, NB.wake, { capture: true, passive: true }));
+    NB.cleanupResize = () => removeEventListener("resize", size);
+    return true;
+  };
+  NB.stop = function(){
+    if (!NB.on) return false;
+    NB.on = false;
+    ["pointermove", "pointerdown", "keydown", "wheel", "touchstart"].forEach(t => removeEventListener(t, NB.wake, { capture: true }));
+    NB.cleanupResize();
+    // snap back: quick, not slow
+    layers().forEach(e => { e.style.transition = "filter .25s, opacity .25s, transform .25s"; e.style.filter = e.style.opacity = e.style.transform = ""; });
+    document.querySelectorAll(".os-win").forEach(w => { w.style.transition = "opacity .25s, filter .25s"; w.style.opacity = w.style.filter = ""; });
+    const d = NB.el; d.style.transition = "opacity .25s"; d.style.opacity = 0;
+    setTimeout(() => { d.remove(); layers().forEach(e => e.style.transition = e.style.transformOrigin = ""); document.querySelectorAll(".os-win").forEach(w => w.style.transition = ""); }, 300);
+    NB.onStop && NB.onStop();
+    return true;
+  };
+
+  window.FX = { davinci: DV, cookie: CK, rabbit: RB, pong: PG, worm: WM, dive, numbers: NB };
 })();
