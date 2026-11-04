@@ -7,6 +7,9 @@ A single static page (`index.html`, no build step) styled after 90s hacker-movie
 Everything editable lives in the `<script>` block near the bottom of `index.html`:
 `TAGLINES`, `TICKER`, `EVENTS`, `PROJECTS` and `JOBS`.
 
+The Hackers-style terminal (open it with the Terminal icon, the NYNEX taskbar button or the `~` key) lives in `terminal.js`.
+Its files are in the `FILES` object and its commands in the `C` object.
+
 ## Deploying
 Hosted on GitHub Pages from the `main` branch, root folder (Settings → Pages → Deploy from a branch → `main` / `/ (root)`).
 Pushing to `main` redeploys the site. There is no build step.
